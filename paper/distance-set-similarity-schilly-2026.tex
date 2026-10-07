@@ -6,6 +6,7 @@
 \usepackage{microtype}
 \usepackage{enumitem}
 \usepackage{alltt}
+\usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
 
@@ -13,6 +14,7 @@
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{statement}[theorem]{Statement}
 \newtheorem{maintheorem}{Theorem}
 \renewcommand{\themaintheorem}{\Alph{maintheorem}}
 \newtheorem{mainproposition}[maintheorem]{Proposition}
@@ -28,12 +30,15 @@
 \newcommand{\dimH}{\dim_{\mathrm H}}
 \newcommand{\Lm}{\mathcal{L}}
 \newcommand{\Dy}{\mathcal{D}}
-
+\newcommand{\G}{\mathcal{G}_q}
+% Lean declaration names (underscores allowed)
+\newcommand{\lean}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\leanref}[1]{\hfill{\footnotesize[Lean: \lean{#1}]}}
 
 \title[Erd\H{o}s similarity for distance sets]{Erd\H{o}s similarity for distance sets:\\
 finite patterns, a pinned obstruction, and an open window}
 \author{Harald Schilly}
-\address{Independent researcher, Vienna, Austria}
+\address{Independent researcher, Austria}
 \email{harald.schilly@gmail.com}
 \date{October 2026}
 
@@ -47,14 +52,16 @@ the Erd\H{o}s similarity problem. We combine two recent results announced by Ope
 distance theorem in all dimensions, and the dyadic case of the Erd\H{o}s similarity conjecture.
 Assuming these, we show the following. (A) If $\dimH E>d/2$, then $\Delta(E)$ contains affine
 copies of every finite set, for a positive-measure family of translations at every small scale.
-(B) There is a compact set $K\subset\R^d$ of positive volume, hence of full dimension, whose
-distance set from the origin contains no affine copy of the dyadic sequence. The full distance
-set $\Delta(K)$ does contain one, and the origin is the only point of $\R^d$ ($d\ge2$) from
-which the obstruction occurs. Since the Mattila--Sj\"olin theorem settles the question above dimension
-$(d+1)/2$, it remains open exactly in the window $d/2<\dimH E\le(d+1)/2$. A negative answer
-there would produce distance sets of positive measure with empty interior. Both theorems are
-formalized in Lean~4 with Mathlib, with the two inputs as explicit hypotheses. We also
-re-checked OpenAI's formal proofs of both inputs with the Lean kernel.
+(B) There is a compact set $K\subset\R^d$ of nearly full volume in the unit ball whose distance
+set from the origin contains no affine copy of the dyadic sequence. The full distance set
+$\Delta(K)$ does contain one, and so does the distance set from every other point. (C) A negative
+answer to the question forces $\Delta(E)$ to have positive measure but empty interior; with the
+classical Mattila--Sj\"olin theorem, the question is therefore open exactly for
+$d/2<\dimH E\le(d+1)/2$. Every statement of this note is proved in Lean~4 with Mathlib. The two
+OpenAI results enter as explicit hypotheses, and we re-checked OpenAI's own Lean proofs of them
+with the Lean kernel, so Theorems~A and~B and Proposition~C are machine-checked down to the
+standard axioms. The Mattila--Sj\"olin theorem, which is not formalized, is used only in one
+clearly marked remark.
 \end{abstract}
 
 \subjclass[2020]{28A80 (primary); 28A75, 42B10, 03B35}
@@ -94,9 +101,9 @@ $\Delta(E)$ to contain an interval.
 \subsection{The question}
 The Falconer theorem says that $\Delta(E)$ is large in measure, while the dyadic theorem says
 that being large in measure is not enough to contain $\Dy$. Distance sets, however, have
-additional multi-scale structure: $\Delta(E)\supseteq\Delta(E\cap B)$ for every ball $B$, so
-$\Delta(E)\cap[0,r)$ has positive measure for every $r>0$ as soon as the dimension condition
-holds locally. This motivates:
+additional multi-scale structure: $\Delta(E)\supseteq\Delta(E\cap B)$ for every ball $B$. In
+particular (Lemma~\ref{lem:scales}), if $\dimH E>d/2$ then $\Delta(E)\cap[0,r]$ has positive
+measure for every $r>0$. This motivates:
 
 \begin{question}[Erd\H{o}s similarity for distance sets]\label{q:main}
 Let $d\ge2$ and let $E\subset\R^d$ be compact with $\dimH E>d/2$. Must $\Delta(E)$ contain a
@@ -107,9 +114,9 @@ We could not find this question, or any study of Erd\H{o}s-type patterns inside 
 in the literature; it is not discussed in the recent survey~\cite{JungLaiMooroogen2024}.
 
 \subsection{Results}
-Throughout, Theorems~A and~B are \emph{conditional} on the two inputs stated precisely in
-Section~\ref{sec:inputs}. Theorem~\ref{thm:inputFalconer} is the Falconer theorem of~\cite{OAIFalconer}, and
-Theorem~\ref{thm:inputDyadic} is the dyadic avoidance theorem of~\cite{OAIDyadic}.
+Theorem~\ref{thm:A} assumes the Falconer theorem (Theorem~\ref{thm:inputFalconer}), and
+Theorem~\ref{thm:B} assumes the dyadic avoidance theorem (Theorem~\ref{thm:inputDyadic}); both
+inputs are stated precisely in Section~\ref{sec:inputs}.
 
 \begin{maintheorem}[Finite patterns]\label{thm:A}
 Assume Theorem~\ref{thm:inputFalconer}. Let $d\ge2$, let $E\subset\R^d$ be compact with $\dimH E>d/2$, and let
@@ -135,49 +142,82 @@ $\Delta_p(K)=\{|p-y|:y\in K\}$ contains a nondegenerate interval, hence an affin
 
 So pinned distance sets are not universal hosts for $\Dy$, even from a pin inside a set of
 full dimension and nearly full volume in the ball. The obstruction, however, sits at one single
-point. Theorems~\ref{thm:A} and~\ref{thm:B} together with the Mattila--Sj\"olin theorem show
-where Question~\ref{q:main} is undecided:
+point. Theorem~\ref{thm:B} holds verbatim for every ratio $q\in(0,1)$ in place of $1/2$, assuming
+the corresponding avoidance statement (Theorem~\ref{thm:Bq}).
 
 \begin{mainproposition}\label{prop:C}
-Let $d\ge2$ and let $E\subset\R^d$ be compact. If $\dimH E>(d+1)/2$, or if $\Lm^d(E)>0$, then
-$\Delta(E)$ contains an affine copy $a+s\,P$ of every bounded set $P\subset[0,\infty)$; in
-particular of $\Dy$. If Question~\ref{q:main} has a negative answer for some $E$ with
-$d/2<\dimH E\le(d+1)/2$, then $\Delta(E)$ has positive measure but empty interior.
+Let $d\ge2$, let $E\subset\R^d$ be compact, and let $q\in(0,1)$.
+\begin{enumerate}[label=\textup{(\roman*)},leftmargin=*]
+\item If $\Delta(E)$ has nonempty interior, it contains an affine copy of every bounded set
+  $P\subseteq[0,M]$ and of $\{q^n:n\ge1\}$.
+\item This applies whenever $\Lm^d(E)>0$.
+\item Assume Theorem~\ref{thm:inputFalconer}. If $\dimH E>d/2$ and $\Delta(E)$ contains no affine
+  copy of $\{q^n:n\ge1\}$, then $\Lm^1(\Delta(E))>0$, $\Delta(E)$ has empty interior, and
+  $\Lm^d(E)=0$.
+\end{enumerate}
 \end{mainproposition}
 
-We are not aware of a general result that guarantees nonempty interior of $\Delta(E)$ below the
-Mattila--Sj\"olin threshold $(d+1)/2$ (see~\cite{MattilaBook2015} for background). Under that
-reading, a negative answer to Question~\ref{q:main} in the window would also give new
-examples of distance sets with positive measure and empty interior. Section~\ref{sec:open}
-lists further questions.
+Combined with the Mattila--Sj\"olin theorem, a counterexample to Question~\ref{q:main} must have
+$d/2<\dimH E\le(d+1)/2$ (Remark~\ref{rem:MS}), so the question is open exactly in this window. We
+are not aware of a general result that guarantees nonempty interior of $\Delta(E)$ below the
+Mattila--Sj\"olin threshold $(d+1)/2$ (see~\cite{MattilaBook2015} for background). Under that reading, a
+negative answer to Question~\ref{q:main} would also give new examples of distance sets with
+positive measure and empty interior. Section~\ref{sec:open} lists further questions.
 
-\subsection{Formalization and status of the inputs}
-Theorems~\ref{thm:A} and~\ref{thm:B} are formalized in full in Lean~4~\cite{Lean4}
-with Mathlib~\cite{Mathlib2020}. The two inputs enter as explicit hypotheses whose Lean types are
-copied verbatim from OpenAI's formal statements, and the formal proofs use no axioms beyond
-Lean's standard ones. The two inputs come from an AI-generated, unrefereed manuscript collection
-whose authors state that some results ``could have issues''. OpenAI also provides Lean proofs of both
-inputs. We rebuilt the relevant part of that library ourselves and checked with the Lean kernel
-that these proofs establish exactly our hypotheses, using only the standard axioms
-(Section~\ref{sec:lean}). This makes the dependence on the inputs as transparent as we can.
-It does not replace independent mathematical review of~\cite{OAIFalconer,OAIDyadic}.
+\subsection{Formalization and status of the inputs}\label{sec:status}
+\emph{Every numbered statement of this note is proved in Lean~4~\cite{Lean4} with
+Mathlib~\cite{Mathlib2020}}. The Lean name is given next to each statement and in
+Table~\ref{tab:lean}. External results enter only as explicit hypotheses, never as axioms:
+\begin{enumerate}[leftmargin=*]
+\item the Falconer theorem~\cite{OAIFalconer} (Theorem~\ref{thm:inputFalconer}), used in
+  Theorem~\ref{thm:A}, Lemma~\ref{lem:scales}, Proposition~\ref{prop:pairs} and
+  Proposition~\ref{prop:C}(iii);
+\item the dyadic avoidance theorem~\cite{OAIDyadic} (Theorem~\ref{thm:inputDyadic}), used in
+  Theorem~\ref{thm:B};
+\item the geometric avoidance statement for a ratio $q\ne1/2$~\cite{OAIGeometric}
+  (Statement~\ref{st:geom}), used only in Theorem~\ref{thm:Bq};
+\item the Mattila--Sj\"olin theorem~\cite{MattilaSjolin1999} (Statement~\ref{st:MS}), used only
+  in Remark~\ref{rem:MS}.
+\end{enumerate}
+Inputs~(1) and~(2) come from an AI-generated, unrefereed manuscript collection whose authors state
+that some results ``could have issues''. OpenAI also provides Lean proofs of both. We rebuilt the
+relevant part of that library ourselves and checked with the Lean kernel that these proofs
+establish exactly our hypotheses (Section~\ref{sec:lean}). Consequently Theorems~\ref{thm:A}
+and~\ref{thm:B}, Proposition~\ref{prop:C} and all lemmas are machine-checked down to Lean's standard
+axioms. Input~(3) has no Lean proof, and input~(4) is a classical peer-reviewed theorem that has not
+been formalized. A formal proof certifies the statement as formalized; it does not replace
+independent mathematical review of~\cite{OAIFalconer,OAIDyadic}.
 
-\section{Notation and the two inputs}\label{sec:inputs}
+\section{Notation and inputs}\label{sec:inputs}
 $\Lm^d$ is Lebesgue measure on $\R^d$, $|\cdot|$ the Euclidean norm, $B(0,1)$ the open unit
 ball, and $\dimH$ Hausdorff dimension. For $E\subset\R^d$ and $p\in\R^d$ we write
 $\Delta(E)=\{|x-y|:x,y\in E\}$ and $\Delta_p(E)=\{|p-y|:y\in E\}$. An \emph{affine copy} of
-$P\subset\R$ is a set $x+sP$ with $x\in\R$ and $s\ne0$.
+$P\subset\R$ is a set $x+sP$ with $x\in\R$ and $s\ne0$. For $q\in(0,1)$ let
+$\G=\{q^n:n\ge1\}$, so $\Dy=\mathcal G_{1/2}$.
 
 \begin{theorem}[Falconer distance theorem~{\cite{OAIFalconer}}]\label{thm:inputFalconer}
 Let $d\ge2$ and let $E\subset\R^d$ be compact with $\dimH E>d/2$. Then $\Lm^1(\Delta(E))>0$.
+\leanref{FalconerStatement}
 \end{theorem}
 
 \begin{theorem}[Dyadic avoidance~{\cite{OAIDyadic}}]\label{thm:inputDyadic}
 For every $\eta\in(0,1)$ there is a compact set $A\subseteq[0,1]$ with $\Lm^1(A)>1-\eta$ such that
 for every $x\in\R$ and every $s\neq0$ there is $n\ge1$ with $x+s2^{-n}\notin A$.
+\leanref{DyadicAvoidanceStatement}
 \end{theorem}
 
-\section{Finite patterns: proof of Theorem~\ref{thm:A}}
+\begin{statement}[Geometric avoidance for the ratio $q$]\label{st:geom}
+Statement $\mathrm{GA}(q)$: Theorem~\ref{thm:inputDyadic} with $2^{-n}$ replaced by $q^n$. For
+$q=1/2$ it is Theorem~\ref{thm:inputDyadic}; for all $q\in(0,1)$ it is claimed
+in~\cite{OAIGeometric}, without a Lean proof. \leanref{GeometricAvoidanceStatement}
+\end{statement}
+
+\begin{statement}[Mattila--Sj\"olin~\cite{MattilaSjolin1999}]\label{st:MS}
+If $d\ge2$ and $E\subset\R^d$ is compact with $\dimH E>(d+1)/2$, then $\Delta(E)$ has nonempty
+interior. \leanref{MattilaSjolinStatement}
+\end{statement}
+
+\section{Finite patterns}
 
 The following is the standard Steinhaus-type argument (compare the introduction
 of~\cite{OAIDyadic}). We include it because Theorem~\ref{thm:A} needs the version with a
@@ -186,13 +226,13 @@ positive-measure set of translations at every small scale.
 \begin{lemma}\label{lem:steinhaus}
 Let $S\subset\R$ be measurable with $0<\Lm^1(S)<\infty$ and let $F\subset\R$ be finite. There is
 $\delta>0$ such that $\Lm^1(\{x:x+sF\subseteq S\})>0$ for all $|s|<\delta$.
+\leanref{eventually_volume_pattern_pos}
 \end{lemma}
 
 \begin{proof}
 For $a\in F$ let $T_{a,s}=S-sa$. Translation is continuous in measure:
-$\Lm^1(T_{a,s}\,\triangle\,S)\to0$ as $s\to0$, since $\|\mathbf 1_S(\cdot+h)-\mathbf 1_S\|_{L^1}\to0$
-as $h\to0$. Choose $\delta>0$ with $\sum_{a\in F}\Lm^1(T_{a,s}\triangle S)<\Lm^1(S)$ for $|s|<\delta$.
-Since
+$\Lm^1(T_{a,s}\,\triangle\,S)\to0$ as $s\to0$. Choose $\delta>0$ with
+$\sum_{a\in F}\Lm^1(T_{a,s}\triangle S)<\Lm^1(S)$ for $|s|<\delta$. Since
 \[
   S\subseteq\{x: x+sF\subseteq S\}\ \cup\ \bigcup_{a\in F}\,(S\setminus T_{a,s}),
 \]
@@ -201,6 +241,7 @@ claim follows.
 \end{proof}
 
 \begin{proof}[Proof of Theorem~\ref{thm:A}]
+\leanref{finite_pattern_distSet, exists_finite_pattern_distSet}\\
 $\Delta(E)$ is the image of the compact set $E\times E$ under the continuous map
 $(x,y)\mapsto|x-y|$, so it is compact. In particular it is measurable with finite measure, and
 $\Lm^1(\Delta(E))>0$ by Theorem~\ref{thm:inputFalconer}. Lemma~\ref{lem:steinhaus} with $S=\Delta(E)$ gives the first
@@ -208,34 +249,57 @@ claim. For the second, apply it with $s=\pm\min(\delta,\delta')/2$; a set of pos
 nonempty.
 \end{proof}
 
-\begin{remark}
-The set $\{(x,s):x+sF\subseteq\Delta(E)\}$ is closed, and by Tonelli's theorem it has positive
-planar measure. Theorem~\ref{thm:A} uses nothing about distance sets beyond compactness and positive measure. Its
-point is the contrast with Theorem~\ref{thm:B} and Question~\ref{q:main}: the finite-to-infinite gap
-of the Erd\H{o}s similarity problem reappears inside Falconer distance sets.
-\end{remark}
+\begin{proposition}[Planar form]\label{prop:pairs}
+Under the assumptions of Theorem~\ref{thm:A}, the set $\{(s,x)\in\R^2:x+sF\subseteq\Delta(E)\}$ has
+positive planar Lebesgue measure. \leanref{volume_pattern_pairs_pos}
+\end{proposition}
 
-\section{The pinned obstruction: proof of Theorem~\ref{thm:B}}
+\begin{proof}
+The set is closed, hence measurable. By Tonelli's theorem its measure is
+$\int\Lm^1(\{x:x+sF\subseteq\Delta(E)\})\,ds$, and the integrand is positive for $|s|<\delta$.
+\end{proof}
 
-\begin{lemma}[Adding the limit point]\label{lem:zero}
-Let $A\subset\R$ contain no nontrivial affine copy of $\Dy$. Then neither does $A\cup\{0\}$.
+\begin{lemma}[Distances at every scale]\label{lem:scales}
+Assume Theorem~\ref{thm:inputFalconer}. If $d\ge2$ and $E\subset\R^d$ is compact with $\dimH E>d/2$,
+then $\Lm^1(\Delta(E)\cap[0,r])>0$ for every $r>0$.
+\leanref{volume_distSet_inter_Icc_pos}
 \end{lemma}
 
 \begin{proof}
-Suppose $x+s2^{-n}\in A\cup\{0\}$ for all $n\ge1$, with $s\ne0$. The points $x+s2^{-m}$, $m\ge0$,
-are pairwise distinct. If none of them is $0$, then $x+s\Dy\subseteq A$, a contradiction. Otherwise
-$x+s2^{-m}=0$ for exactly one $m\ge0$. The tail $\{x+s2^{-(m+n)}:n\ge1\}=x+(s2^{-m})\Dy$ is then
-an affine copy of $\Dy$ avoiding $0$, hence contained in $A$, again a contradiction.
+Cover $E$ by finitely many closed balls $\bar B(c_i,r/2)$. Hausdorff dimension of a finite union
+is the maximum of the dimensions, so some compact piece $E_i=E\cap\bar B(c_i,r/2)$ has
+$\dimH E_i>d/2$. By Theorem~\ref{thm:inputFalconer}, $\Lm^1(\Delta(E_i))>0$, and
+$\Delta(E_i)\subseteq\Delta(E)\cap[0,r]$.
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:A} uses nothing about distance sets beyond compactness and positive measure. Its
+point is the contrast with Theorem~\ref{thm:B} and Question~\ref{q:main}: the finite-to-infinite
+gap of the Erd\H{o}s similarity problem reappears inside Falconer distance sets.
+\end{remark}
+
+\section{The pinned obstruction}
+
+\begin{lemma}[Adding the limit point]\label{lem:zero}
+Let $q\in(0,1)$ and let $A\subset\R$ contain no nontrivial affine copy of $\G$. Then neither does
+$A\cup\{0\}$. \leanref{not_containsGeomCopy_insert_zero}
+\end{lemma}
+
+\begin{proof}
+Suppose $x+sq^n\in A\cup\{0\}$ for all $n\ge1$, with $s\ne0$. The points $x+sq^m$, $m\ge0$,
+are pairwise distinct. If none of them is $0$, then $x+s\G\subseteq A$, a contradiction. Otherwise
+$x+sq^m=0$ for exactly one $m\ge0$. The tail $\{x+sq^{m+n}:n\ge1\}=x+(sq^m)\G$ is then
+an affine copy of $\G$ avoiding $0$, hence contained in $A$, again a contradiction.
 \end{proof}
 
 \begin{lemma}[Radial sets]\label{lem:radial}
-Let $d\ge1$ and let $A\subseteq[0,1]$ be compact with $\Lm^1(A)=c>0$. Then
-$K_A=\{y\in\R^d:|y|\in A\}$ is compact, contained in the closed unit ball, and
-$\Lm^d(K_A)\ge c^d\,\Lm^d(B(0,1))$.
+Let $d\ge1$ and let $A\subseteq[0,1]$ be compact with $\Lm^1(A)=c$. Then
+$K_A=\{y\in\R^d:|y|\in A\}$ satisfies $\Lm^d(K_A)\ge c^d\,\Lm^d(B(0,1))$.
+\leanref{volume_norm_preimage_ge}
 \end{lemma}
 
 \begin{proof}
-Compactness and boundedness are clear. In polar coordinates,
+In polar coordinates,
 \[
   \Lm^d(K_A)=d\,\Lm^d(B(0,1))\int_A r^{d-1}\,dr .
 \]
@@ -249,18 +313,18 @@ so $\int_A r^{d-1}dr\ge c^d/d$.
 \end{proof}
 
 \begin{lemma}\label{lem:dim}
-If $K\subset\R^d$ has $\Lm^d(K)>0$, then $\dimH K=d$.
+If $K\subset\R^d$ has $\Lm^d(K)>0$, then $\dimH K=d$. \leanref{dimH_eq_of_volume_pos}
 \end{lemma}
 
 \begin{proof}
-On $\R^d$ the $d$-dimensional Hausdorff measure (normalized as in Mathlib, for the sup-norm) is a
-positive multiple of $\Lm^d$, and the Euclidean and sup norms are bi-Lipschitz equivalent.
-Hence $\mathcal H^d(K)>0$ and $\dimH K\ge d$. The reverse inequality is trivial.
+For the sup-norm on $\R^d$, $d$-dimensional Hausdorff measure equals $\Lm^d$, and the Euclidean
+and sup norms are bi-Lipschitz equivalent. Hence $\mathcal H^d(K)>0$ and $\dimH K\ge d$. The
+reverse inequality is trivial.
 \end{proof}
 
 \begin{lemma}[Steinhaus]\label{lem:interval}
 If $K\subset\R^d$ ($d\ge1$) is compact with $\Lm^d(K)>0$, then $[0,\varepsilon)\subseteq\Delta(K)$
-for some $\varepsilon>0$. Consequently $\Delta(K)\supseteq\frac\varepsilon2\Dy$.
+for some $\varepsilon>0$. \leanref{exists_Ico_subset_distSet}
 \end{lemma}
 
 \begin{proof}
@@ -268,35 +332,60 @@ By Steinhaus' theorem $K-K\supseteq B(0,\varepsilon)$ for some $\varepsilon>0$. 
 $0\le r<\varepsilon$ write $re_1=x-y$ with $x,y\in K$; then $r=|x-y|\in\Delta(K)$.
 \end{proof}
 
-\begin{proof}[Proof of Theorem~\ref{thm:B}]
-Let $A$ be given by Theorem~\ref{thm:inputDyadic} for $\eta$, and put $K=\{y:|y|\in A\cup\{0\}\}$. The set
+\begin{lemma}[Other pins]\label{lem:otherpins}
+Let $d\ge2$, $\rho>0$, $p\in\R^d\setminus\{0\}$, and let $K\subseteq\R^d$ contain the sphere
+$\{|y|=\rho\}$. Then $\Delta_p(K)\supseteq[\,||p|-\rho|,\,|p|+\rho\,]$.
+\leanref{Icc_subset_pinnedDistSet}
+\end{lemma}
+
+\begin{proof}
+The sphere is connected because $d\ge2$, and the continuous function $y\mapsto|p-y|$ on it takes
+the values $||p|-\rho|$ at $\rho p/|p|$ and $|p|+\rho$ at $-\rho p/|p|$. By the intermediate
+value theorem it takes every value in between.
+\end{proof}
+
+\begin{theorem}[Theorem~\ref{thm:B} for a general ratio]\label{thm:Bq}
+Let $q\in(0,1)$ and assume $\mathrm{GA}(q)$ (Statement~\ref{st:geom}). Then Theorem~\ref{thm:B}
+holds with $\Dy$ replaced by $\G$. \leanref{pinned_geometric_obstruction}
+\end{theorem}
+
+\begin{proof}
+Let $A$ be given by $\mathrm{GA}(q)$ for $\eta$, and put $K=\{y:|y|\in A\cup\{0\}\}$. The set
 $A\cup\{0\}\subseteq[0,1]$ is compact, so $K$ is compact and lies in the closed unit ball, and
 $0\in K$. Since $K\supseteq K_A$ and $\Lm^1(A)>1-\eta$, Lemma~\ref{lem:radial} gives
 $\Lm^d(K)\ge(1-\eta)^d\Lm^d(B(0,1))>0$, and Lemma~\ref{lem:dim} gives $\dimH K=d$. Further,
-$\Delta_0(K)=\{|y|:y\in K\}\subseteq A\cup\{0\}$, which contains no affine copy of $\Dy$ by
-Lemma~\ref{lem:zero}. Lemma~\ref{lem:interval} shows that $\Delta(K)$ contains one.
+$\Delta_0(K)=\{|y|:y\in K\}\subseteq A\cup\{0\}$, which contains no affine copy of $\G$ by
+Lemma~\ref{lem:zero}.
 
-For the last sentence, let $d\ge2$ and $p\ne0$, and pick $\rho\in A$ with $\rho>0$ (possible since
-$\Lm^1(A)>0$). The sphere $\{|y|=\rho\}\subseteq K$ is connected and the continuous function
-$y\mapsto|p-y|$ on it attains the values $|\rho-|p||$ and $\rho+|p|$. Hence $\Delta_p(K)$ contains
-the interval $[\,|\rho-|p||,\rho+|p|\,]$ of length $2\min(\rho,|p|)>0$. Any nondegenerate interval
-$[a,b]$ contains $a+(b-a)\Dy$.
+Any set $P\subseteq\R$ containing a nondegenerate interval $[a,b]$ contains the affine copy
+$a+(b-a)\G$. By Lemma~\ref{lem:interval}, $\Delta(K)$ contains an interval. For $d\ge2$ and $p\ne0$,
+pick $\rho\in A$ with $\rho>0$ (possible since $\Lm^1(A)>0$); the sphere $\{|y|=\rho\}$ lies in $K$,
+so by Lemma~\ref{lem:otherpins} $\Delta_p(K)$ contains an interval of length $2\min(\rho,|p|)>0$.
 \end{proof}
 
-\begin{remark}[Other ratios]
-The proof uses only two properties of $\Dy$: the avoidance property, and the fact that tails of $\Dy$
-are affine copies of $\Dy$. Both hold for $\{q^n:n\ge1\}$ with $q\in(0,1)$. So Theorem~\ref{thm:B}
-holds for every geometric sequence, conditional on the geometric case~\cite{OAIGeometric}, which is
-not part of the Lean formalization.
+\begin{proof}[Proof of Theorem~\ref{thm:B}]
+\leanref{pinned_dyadic_obstruction}\\
+Theorem~\ref{thm:Bq} with $q=1/2$, where $\mathrm{GA}(1/2)$ is Theorem~\ref{thm:inputDyadic}.
+\end{proof}
+
+\section{Where the question is open}
+
+\begin{proof}[Proof of Proposition~\ref{prop:C}]
+\leanref{distSet_containsAffineCopy_of_interior, distSet_containsAffineCopy_of_volume_pos, counterexample_properties}\\
+(i) A set with nonempty interior contains an interval $[a,b]$ with $a<b$. For
+$P\subseteq[0,M]$, $M>0$, we have $a+\frac{b-a}{M}P\subseteq[a,b]$, and $\G\subseteq[0,1]$.
+(ii) follows from Lemma~\ref{lem:interval}. (iii) $\Lm^1(\Delta(E))>0$ is
+Theorem~\ref{thm:inputFalconer}; nonempty interior or $\Lm^d(E)>0$ would give a copy of $\G$ by (i)
+and (ii).
+\end{proof}
+
+\begin{remark}[Uses the Mattila--Sj\"olin theorem]\label{rem:MS}
+Assume Statement~\ref{st:MS}. If $d\ge2$, $E\subset\R^d$ is compact and $\Delta(E)$ contains no
+affine copy of $\G$, then $\dimH E\le(d+1)/2$: otherwise $\Delta(E)$ has nonempty interior and
+Proposition~\ref{prop:C}(i) applies. Together with Proposition~\ref{prop:C}(iii), a counterexample to
+Question~\ref{q:main} lies in the window $d/2<\dimH E\le(d+1)/2$.
+\leanref{window_of_mattilaSjolin}
 \end{remark}
-
-\section{Above the Mattila--Sj\"olin threshold: proof of Proposition~\ref{prop:C}}
-
-If $\dimH E>(d+1)/2$, the Mattila--Sj\"olin theorem~\cite{MattilaSjolin1999} gives an interval
-$[a,b]\subseteq\Delta(E)$ with $a<b$. If $\Lm^d(E)>0$, Lemma~\ref{lem:interval} gives one. For bounded
-$P\subseteq[0,M]$ with $M>0$, we have $a+\frac{b-a}{M}P\subseteq[a,b]$. If $\Delta(E)$ contains no affine copy of
-$\Dy$, it therefore has empty interior. If moreover $\dimH E>d/2$, then $\Lm^1(\Delta(E))>0$ by
-Theorem~\ref{thm:inputFalconer}. \qed
 
 \section{Open questions}\label{sec:open}
 \begin{enumerate}[leftmargin=*]
@@ -304,34 +393,37 @@ Theorem~\ref{thm:inputFalconer}. \qed
   multi-scale structure of distance sets beyond positive measure. A negative answer would need a
   construction controlling all distances of a set of dimension $>d/2$ simultaneously.
 \item \emph{All pins.} Is there a compact $E\subset\R^d$ with $\Lm^d(E)>0$ (or merely $\dimH E>d/2$)
-  such that $\Delta_p(E)$ contains no affine copy of $\Dy$ for \emph{every} $p\in E$? The complement
-  of such a set must contain, around every point of $E$, entire spheres whose radii meet every
-  affine copy of $\Dy$. This suggests a connection with spherical maximal function estimates.
-  Pinned Falconer-type theorems~\cite{PeresSchlag2000,GIOW2020} give pins with large pinned distance sets,
-  but say nothing about such patterns.
+  such that $\Delta_p(E)$ contains no affine copy of $\Dy$ for \emph{every} $p\in E$? By
+  Lemma~\ref{lem:spheres} below, this asks for a set whose complement contains, around every point
+  of $E$, a sphere of radius $r$ for some $r$ in every affine copy of $\Dy$. This suggests a
+  connection with spherical maximal function estimates. Pinned Falconer-type
+  theorems~\cite{PeresSchlag2000,GIOW2020} give pins with large pinned distance sets, but say
+  nothing about such patterns.
 \item The same questions for general infinite sets $P$, for instance for every $P$ known to be
   non-universal.
 \end{enumerate}
 
+\begin{lemma}\label{lem:spheres}
+For $p\in\R^d$ and $E\subseteq\R^d$, the pinned distance set $\Delta_p(E)$ contains no affine copy
+of $\G$ if and only if for all $x\in\R$ and $s\ne0$ there is $n\ge1$ such that the sphere of radius
+$x+sq^n$ about $p$ is disjoint from $E$. \leanref{not_containsGeomCopy_pinnedDistSet_iff}
+\end{lemma}
+
+\begin{proof}
+$r\in\Delta_p(E)$ if and only if the sphere of radius $r$ about $p$ meets $E$.
+\end{proof}
+
 \section{Formalization}\label{sec:lean}
 \begin{sloppypar}
-
 The Lean development accompanying this note is available at
-\url{https://github.com/haraldschilly/math-distance-set-similarity}. It is pinned to Lean~4 \texttt{v4.34.1} and
-Mathlib commit \texttt{d13f23b}, the same versions as OpenAI's library, so the input statements
-typecheck identically. It consists of four files:
-\begin{itemize}[leftmargin=*]
-\item \texttt{Statements.lean}: the propositions \texttt{FalconerStatement} and
-  \texttt{DyadicAvoidanceStatement}, copied verbatim from OpenAI's statement files
-  \texttt{FalconerAllDimensions.lean} and \texttt{DyadicAvoidance.lean}, and the definitions of distance
-  sets and of ``contains an affine copy of $\Dy$''.
-\item \texttt{FinitePatterns.lean}: Lemma~\ref{lem:steinhaus} and Theorem~\ref{thm:A}
-  (\texttt{finite\_pattern\_distSet}, \texttt{exists\_finite\_pattern\_distSet}).
-\item \texttt{RadialVolume.lean}: Lemma~\ref{lem:radial}, including the rearrangement inequality
-  and the polar-coordinate formula.
-\item \texttt{PinnedObstruction.lean}: Lemmas~\ref{lem:zero}, \ref{lem:dim}, \ref{lem:interval}
-  and Theorem~\ref{thm:B} (\texttt{pinned\_dyadic\_obstruction}). The formal statement is:
-\end{itemize}
+\url{https://github.com/haraldschilly/math-distance-set-similarity}. It is pinned to Lean~4
+\texttt{v4.34.1} and Mathlib commit \texttt{d13f23b}, the same versions as OpenAI's library, so the
+input statements typecheck identically. The four hypotheses of Section~\ref{sec:status} are Lean
+propositions in \texttt{Statements.lean}. \lean{FalconerStatement} and
+\lean{DyadicAvoidanceStatement} are copied verbatim from OpenAI's statement files
+\texttt{FalconerAllDimensions.lean} and \texttt{DyadicAvoidance.lean}. Table~\ref{tab:lean} lists every
+result of this note with its Lean name and its hypotheses. For example, Theorem~\ref{thm:B} reads:
+\end{sloppypar}
 \begin{alltt}\footnotesize
 theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) \{d : \(\mathbb{N}\)\}
     (hd : 1 \(\le\) d) \{\(\eta\) : \(\mathbb{R}\)\} (h\(\eta\)0 : 0 < \(\eta\)) (h\(\eta\)1 : \(\eta\) < 1) :
@@ -343,20 +435,49 @@ theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) \{d : \(\math
       \(\neg\) ContainsDyadicCopy (pinnedDistSet 0 K) \(\wedge\) ContainsDyadicCopy (distSet K) \(\wedge\)
       (2 \(\le\) d \(\to\) \(\forall\) p, p \(\ne\) 0 \(\to\) ContainsDyadicCopy (pinnedDistSet p K))
 \end{alltt}
-Not formalized are the remark on other ratios and Proposition~\ref{prop:C}, which relies on the
-Mattila--Sj\"olin theorem (not available in Mathlib).
 
+\begin{table}[ht]
+\centering\footnotesize
+\begin{tabular}{@{}lll@{}}
+\toprule
+Result & Lean name & Hypotheses \\
+\midrule
+Lemma~\ref{lem:scales} & \lean{volume_distSet_inter_Icc_pos} & Falconer \\
+Lemma~\ref{lem:steinhaus} & \lean{eventually_volume_pattern_pos} & none \\
+Theorem~\ref{thm:A} & \lean{finite_pattern_distSet}, \lean{exists_finite_pattern_distSet} & Falconer \\
+Proposition~\ref{prop:pairs} & \lean{volume_pattern_pairs_pos} & Falconer \\
+Lemma~\ref{lem:zero} & \lean{not_containsGeomCopy_insert_zero} & none \\
+Lemma~\ref{lem:radial} & \lean{volume_norm_preimage_ge} & none \\
+Lemma~\ref{lem:dim} & \lean{dimH_eq_of_volume_pos} & none \\
+Lemma~\ref{lem:interval} & \lean{exists_Ico_subset_distSet} & none \\
+Lemma~\ref{lem:otherpins} & \lean{Icc_subset_pinnedDistSet} & none \\
+Theorem~\ref{thm:B} & \lean{pinned_dyadic_obstruction} & dyadic avoidance \\
+Theorem~\ref{thm:Bq} & \lean{pinned_geometric_obstruction} & $\mathrm{GA}(q)$ \\
+Proposition~\ref{prop:C}(i),(ii) & \lean{distSet_containsAffineCopy_of_interior}, \lean{..._of_volume_pos} & none \\
+Proposition~\ref{prop:C}(iii) & \lean{counterexample_properties} & Falconer \\
+Remark~\ref{rem:MS} & \lean{window_of_mattilaSjolin} & Mattila--Sj\"olin \\
+Lemma~\ref{lem:spheres} & \lean{not_containsGeomCopy_pinnedDistSet_iff} & none \\
+\bottomrule
+\end{tabular}
+\caption{Results and their Lean formalizations (namespace \lean{DistanceSimilarity}). Every listed
+theorem depends only on the axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.}
+\label{tab:lean}
+\end{table}
+
+\begin{sloppypar}
 \emph{Re-checking the inputs.} A script in the repository copies, from a checkout of
 \texttt{github.com/openai/math} at commit \texttt{adc7f12}, the transitive closure of OpenAI's Lean
 modules proving the two inputs: 2459 files, depending only on Mathlib. These are built with the
-same toolchain. A further module then states
+same toolchain. A further module states
 \texttt{theorem : FalconerStatement := OAI.Falconer.falconer\_distance\_conjecture} and the
-analogous dyadic statement, and derives unconditional versions of Theorems~\ref{thm:A} and~\ref{thm:B}.
-The kernel accepts these, and \texttt{\#print axioms} reports only \texttt{propext},
-\texttt{Classical.choice} and \texttt{Quot.sound}. We additionally replayed the resulting environment
-with Lean's \texttt{leanchecker}. We did not run OpenAI's \texttt{comparator} setup. A formal proof
-certifies the statement as formalized. Readers should still compare the formal statements with
-the informal ones.
+analogous dyadic statement. It then derives unconditional versions of Lemma~\ref{lem:scales},
+Theorem~\ref{thm:A}, Proposition~\ref{prop:pairs}, Theorem~\ref{thm:B} and
+Proposition~\ref{prop:C}(iii). The kernel accepts these, and \texttt{\#print axioms} reports only
+the three standard axioms. We additionally replayed the entire resulting environment (Mathlib,
+OpenAI's modules and ours) in a fresh kernel with Lean's \texttt{leanchecker}. We did not run
+OpenAI's \texttt{comparator} setup. A formal proof certifies the statement as formalized. Readers
+should still compare the formal statements with the informal ones; to make this easy, the
+repository contains a plain-language guide to reading the Lean statements.
 \end{sloppypar}
 
 \section*{Acknowledgments and use of AI}

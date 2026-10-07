@@ -18,23 +18,32 @@ conjecture** (family 084).
 
 | Result | Content | Lean |
 |---|---|---|
-| Theorem A | `dim_H E > d/2` ⇒ `Δ(E)` contains `x + sF` for every finite `F`, for a positive-measure set of `x` at every small scale `s` (both signs) | `finite_pattern_distSet`, `exists_finite_pattern_distSet` |
-| Theorem B | There is a compact `K ⊂ ℝ^d` with volume ≥ (1−η)^d·vol(B) (so `dim_H K = d`) whose distance set from the origin avoids every affine copy of the dyadic sequence, while `Δ(K)` and every other pinned distance set `Δ_p(K)` (d ≥ 2) contain one | `pinned_dyadic_obstruction` |
-| Proposition C | Above the Mattila–Sjölin threshold `(d+1)/2` the answer is yes, so the question is open only for `d/2 < dim_H E ≤ (d+1)/2` | paper only |
+| Theorem A | `dim_H E > d/2` ⇒ `Δ(E)` contains `x + sF` for every finite `F`, for a positive-measure set of `x` at every small scale `s` (both signs) | `finite_pattern_distSet` |
+| Theorem B | A compact `K ⊂ ℝ^d` with volume ≥ (1−η)^d·vol(B) whose distance set from the origin avoids every affine copy of the dyadic sequence, while `Δ(K)` and every other `Δ_p(K)` (d ≥ 2) contain one. Theorem 4.6 does the same for any ratio `q` | `pinned_dyadic_obstruction`, `pinned_geometric_obstruction` |
+| Proposition C | A counterexample to the question has `Δ(E)` of positive measure with empty interior. With Mattila–Sjölin, the question is open only for `d/2 < dim_H E ≤ (d+1)/2` | `counterexample_properties`, `window_of_mattilaSjolin` |
 
-## Status of the inputs: please read
+**Every numbered statement in the paper has a Lean proof** (table in the paper, Section 7, and in
+[EXPLAINER.md](EXPLAINER.md#76-where-each-paper-statement-lives)). `#print axioms` shows only
+`propext`, `Classical.choice`, `Quot.sound` for all of them (`lake env lean verify/Axioms.lean`).
 
-The two inputs come from an AI-generated, **unrefereed** manuscript collection. Its README says
-some results "could have issues". In this repository:
+## Trust base: please read
 
-1. **Main library (`DistanceSimilarity/`)**: the inputs are **explicit hypotheses**
-   (`FalconerStatement`, `DyadicAvoidanceStatement` in `Statements.lean`), with Lean types copied
-   verbatim from OpenAI's formal statements. Theorems A and B are proved from them. `#print axioms`
-   shows only `propext`, `Classical.choice`, `Quot.sound`.
-2. **Verification (`verify/`)**: copies OpenAI's Lean proofs of the two inputs (2459 files at
-   commit `adc7f12`, depending only on Mathlib), builds them with the same toolchain, and checks with
-   the Lean kernel that they prove *exactly* our hypotheses. Unconditional versions of A and B
-   are then derived.
+External results enter only as **explicit hypotheses** (`DistanceSimilarity/Statements.lean`),
+never as axioms:
+
+| Hypothesis | Source | Lean proof? | Used in |
+|---|---|---|---|
+| `FalconerStatement` | OpenAI, family 073 | **yes**, by OpenAI; re-checked here (`verify/`) | Thm A, Lemma 3.3, Prop 3.2, Prop C(iii) |
+| `DyadicAvoidanceStatement` | OpenAI, family 084 | **yes**, by OpenAI; re-checked here (`verify/`) | Thm B |
+| `GeometricAvoidanceStatement q` | OpenAI preprint (Oct 5, 2026) | no (q = 1/2 is the dyadic case) | only Thm 4.6 for q ≠ 1/2 |
+| `MattilaSjolinStatement` | Mattila–Sjölin 1999, peer-reviewed | no (not in Mathlib or OpenAI's library) | only Remark 5.1 |
+
+The OpenAI inputs come from an AI-generated, **unrefereed** collection, whose README says some
+results "could have issues". The first two statements are copied verbatim from OpenAI's formal
+statement files. `verify/` rebuilds OpenAI's Lean proofs (2459 files at commit `adc7f12`, Mathlib
+only), checks with the kernel that they prove *exactly* these statements, and derives unconditional
+versions (`verify/Verify/Unconditional.lean`). The whole environment was also replayed with
+`leanchecker --fresh`.
 
 ## Build
 
