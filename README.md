@@ -1,11 +1,13 @@
 # Erdős similarity for distance sets
 
 [![Lean build](https://github.com/haraldschilly/math-distance-set-similarity/actions/workflows/lean.yml/badge.svg)](https://github.com/haraldschilly/math-distance-set-similarity/actions/workflows/lean.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23219651.svg)](https://doi.org/10.5281/zenodo.23219651)
 
 Lean 4 formalization and paper for
 
 > **Erdős similarity for distance sets: finite patterns, a pinned obstruction, and an open window**
-> Harald Schilly, 2026. [PDF](paper/distance-set-similarity-schilly-2026.pdf)
+> Harald Schilly, 2026. [PDF](paper/distance-set-similarity-schilly-2026.pdf) ·
+> Zenodo preprint [doi:10.5281/zenodo.23219651](https://doi.org/10.5281/zenodo.23219651)
 >
 > **New to the topic?** Read the [plain-language explanation](EXPLAINER.md).
 
@@ -88,9 +90,15 @@ arXiv upload bundle with the `.bbl` included.
   author       = {Schilly, Harald},
   title        = {Erd\H{o}s similarity for distance sets: finite patterns, a pinned obstruction, and an open window},
   year         = {2026},
-  howpublished = {\url{https://github.com/haraldschilly/math-distance-set-similarity}}
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.23219651},
+  url          = {https://doi.org/10.5281/zenodo.23219651},
+  note         = {Preprint. Lean formalization: \url{https://github.com/haraldschilly/math-distance-set-similarity}}
 }
 ```
+
+The DOI above always resolves to the latest version; version 1 is
+[10.5281/zenodo.23219652](https://doi.org/10.5281/zenodo.23219652).
 
 ## Use of AI
 
