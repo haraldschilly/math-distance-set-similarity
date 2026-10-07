@@ -1,5 +1,7 @@
 # Erdős similarity for distance sets
 
+[![Lean build](https://github.com/haraldschilly/math-distance-set-similarity/actions/workflows/lean.yml/badge.svg)](https://github.com/haraldschilly/math-distance-set-similarity/actions/workflows/lean.yml)
+
 Lean 4 formalization and paper for
 
 > **Erdős similarity for distance sets: finite patterns, a pinned obstruction, and an open window**
