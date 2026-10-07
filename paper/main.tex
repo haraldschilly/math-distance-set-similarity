@@ -152,8 +152,7 @@ examples of distance sets with positive measure and empty interior. Section~\ref
 lists further questions.
 
 \subsection{Formalization and status of the inputs}
-Theorems~\ref{thm:A} and~\ref{thm:B} (the latter without the explicit constant $(1-\eta)^d$
-and without the last sentence; see Section~\ref{sec:lean}) are formalized in Lean~4~\cite{Lean4}
+Theorems~\ref{thm:A} and~\ref{thm:B} are formalized in full in Lean~4~\cite{Lean4}
 with Mathlib~\cite{Mathlib2020}. The two inputs enter as explicit hypotheses whose Lean types are
 copied verbatim from OpenAI's formal statements, and the formal proofs use no axioms beyond
 Lean's standard ones. The two inputs come from an AI-generated, unrefereed manuscript collection
@@ -319,7 +318,7 @@ Theorem~\ref{thm:inputFalconer}. \qed
 
 The Lean development accompanies this note. It is pinned to Lean~4 \texttt{v4.34.1} and
 Mathlib commit \texttt{d13f23b}, the same versions as OpenAI's library, so the input statements
-typecheck identically. It consists of three files:
+typecheck identically. It consists of four files:
 \begin{itemize}[leftmargin=*]
 \item \texttt{Statements.lean}: the propositions \texttt{FalconerStatement} and
   \texttt{DyadicAvoidanceStatement}, copied verbatim from OpenAI's statement files
@@ -327,21 +326,24 @@ typecheck identically. It consists of three files:
   sets and of ``contains an affine copy of $\Dy$''.
 \item \texttt{FinitePatterns.lean}: Lemma~\ref{lem:steinhaus} and Theorem~\ref{thm:A}
   (\texttt{finite\_pattern\_distSet}, \texttt{exists\_finite\_pattern\_distSet}).
-\item \texttt{PinnedObstruction.lean}: Lemmas~\ref{lem:zero}, \ref{lem:dim}, \ref{lem:interval},
-  positivity of the volume in Lemma~\ref{lem:radial}, and Theorem~\ref{thm:B}
-  (\texttt{pinned\_dyadic\_obstruction}). The formal statement is:
+\item \texttt{RadialVolume.lean}: Lemma~\ref{lem:radial}, including the rearrangement inequality
+  and the polar-coordinate formula.
+\item \texttt{PinnedObstruction.lean}: Lemmas~\ref{lem:zero}, \ref{lem:dim}, \ref{lem:interval}
+  and Theorem~\ref{thm:B} (\texttt{pinned\_dyadic\_obstruction}). The formal statement is:
 \end{itemize}
 \begin{alltt}\footnotesize
 theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) \{d : \(\mathbb{N}\)\}
     (hd : 1 \(\le\) d) \{\(\eta\) : \(\mathbb{R}\)\} (h\(\eta\)0 : 0 < \(\eta\)) (h\(\eta\)1 : \(\eta\) < 1) :
     \(\exists\) K : Set (EuclideanSpace \(\mathbb{R}\) (Fin d)),
       IsCompact K \(\wedge\) K \(\subseteq\) closedBall 0 1 \(\wedge\)
-      (0 : EuclideanSpace \(\mathbb{R}\) (Fin d)) \(\in\) K \(\wedge\) 0 < volume K \(\wedge\) dimH K = d \(\wedge\)
-      \(\neg\) ContainsDyadicCopy (pinnedDistSet 0 K) \(\wedge\) ContainsDyadicCopy (distSet K)
+      (0 : EuclideanSpace \(\mathbb{R}\) (Fin d)) \(\in\) K \(\wedge\)
+      ENNReal.ofReal ((1 - \(\eta\)) ^ d) * volume (ball 0 1) \(\le\) volume K \(\wedge\)
+      0 < volume K \(\wedge\) dimH K = d \(\wedge\)
+      \(\neg\) ContainsDyadicCopy (pinnedDistSet 0 K) \(\wedge\) ContainsDyadicCopy (distSet K) \(\wedge\)
+      (2 \(\le\) d \(\to\) \(\forall\) p, p \(\ne\) 0 \(\to\) ContainsDyadicCopy (pinnedDistSet p K))
 \end{alltt}
-Not formalized are the explicit constant $(1-\eta)^d$ in Lemma~\ref{lem:radial} (only positivity
-of the volume), the last sentence of Theorem~\ref{thm:B}, the remark on other ratios, and
-Proposition~\ref{prop:C}, which relies on the Mattila--Sj\"olin theorem.
+Not formalized are the remark on other ratios and Proposition~\ref{prop:C}, which relies on the
+Mattila--Sj\"olin theorem (not available in Mathlib).
 
 \emph{Re-checking the inputs.} A script in the repository copies, from a checkout of
 \texttt{github.com/openai/math} at commit \texttt{adc7f12}, the transitive closure of OpenAI's Lean

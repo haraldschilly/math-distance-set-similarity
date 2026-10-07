@@ -23,8 +23,10 @@ theorem finite_pattern_distSet' {d : ℕ} (hd : 2 ≤ d)
 theorem pinned_dyadic_obstruction' {d : ℕ} (hd : 1 ≤ d) {η : ℝ} (hη0 : 0 < η) (hη1 : η < 1) :
     ∃ K : Set (EuclideanSpace ℝ (Fin d)),
       IsCompact K ∧ K ⊆ closedBall 0 1 ∧ (0 : EuclideanSpace ℝ (Fin d)) ∈ K ∧
+      ENNReal.ofReal ((1 - η) ^ d) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) 1) ≤ volume K ∧
       0 < volume K ∧ dimH K = d ∧
-      ¬ ContainsDyadicCopy (pinnedDistSet 0 K) ∧ ContainsDyadicCopy (distSet K) :=
+      ¬ ContainsDyadicCopy (pinnedDistSet 0 K) ∧ ContainsDyadicCopy (distSet K) ∧
+      (2 ≤ d → ∀ p, p ≠ 0 → ContainsDyadicCopy (pinnedDistSet p K)) :=
   pinned_dyadic_obstruction dyadicAvoidance_holds hd hη0 hη1
 
 end DistanceSimilarity

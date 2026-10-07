@@ -1,4 +1,5 @@
 import DistanceSimilarity.Statements
+import DistanceSimilarity.RadialVolume
 
 /-!
 # Theorem B: pinned distance sets are not universal hosts for the dyadic sequence
@@ -76,54 +77,6 @@ theorem dimH_eq_of_volume_pos {d : ℕ} {K : Set (EuclideanSpace ℝ (Fin d))}
       exact hK.ne'
     simpa using le_dimH_of_hausdorffMeasure_ne_zero hH
 
-/-- Polar coordinates: the radial set over a compact `A ⊆ [0,1]` of positive measure has positive
-volume. -/
-theorem volume_norm_preimage_pos {d : ℕ} (hd : 1 ≤ d) {A : Set ℝ} (hAc : IsCompact A)
-    (hA01 : A ⊆ Icc 0 1) (hApos : 0 < volume A) :
-    0 < volume ((fun y : EuclideanSpace ℝ (Fin d) => ‖y‖) ⁻¹' A) := by
-  have hAm : MeasurableSet A := hAc.measurableSet
-  have hm : MeasurableSet ((fun y : EuclideanSpace ℝ (Fin d) => ‖y‖) ⁻¹' A) :=
-    measurable_norm hAm
-  set f : ℝ → ℝ := A.indicator (fun _ => 1) with hf
-  have : Nontrivial (EuclideanSpace ℝ (Fin d)) := by
-    have : Nonempty (Fin d) := ⟨⟨0, by omega⟩⟩
-    infer_instance
-  have hpolar := integral_fun_norm_addHaar (volume : Measure (EuclideanSpace ℝ (Fin d))) f
-  have hlhs : ∫ x : EuclideanSpace ℝ (Fin d), f ‖x‖ =
-      volume.real ((fun y : EuclideanSpace ℝ (Fin d) => ‖y‖) ⁻¹' A) := by
-    rw [← integral_indicator_one hm]
-    congr 1
-  set g : ℝ → ℝ := A.indicator (fun y => y ^ (d - 1)) with hg
-  have hrad : ∫ y in Ioi (0 : ℝ),
-      y ^ (Module.finrank ℝ (EuclideanSpace ℝ (Fin d)) - 1) • f y = ∫ y in Ioi (0 : ℝ), g y := by
-    congr 1
-    ext y
-    by_cases hy : y ∈ A <;> simp [f, g, hy]
-  have hgint : IntegrableOn g (Ioi 0) := by
-    have : IntegrableOn (fun y : ℝ => y ^ (d - 1)) A :=
-      (continuous_pow (d - 1)).continuousOn.integrableOn_compact hAc
-    exact ((integrable_indicator_iff hAm).2 this).integrableOn
-  have hgpos : 0 < ∫ y in Ioi (0 : ℝ), g y := by
-    rw [setIntegral_pos_iff_support_of_nonneg_ae _ hgint]
-    · have hsub : A \ {0} ⊆ Function.support g ∩ Ioi 0 := by
-        rintro y ⟨hyA, hy0⟩
-        have hy : 0 < y := lt_of_le_of_ne (hA01 hyA).1 (Ne.symm hy0)
-        refine ⟨?_, hy⟩
-        rw [Function.mem_support, hg, Set.indicator_of_mem hyA]
-        exact pow_ne_zero _ hy.ne'
-      calc 0 < volume (A \ {0}) := by rwa [measure_sdiff_null (measure_singleton 0)]
-        _ ≤ _ := measure_mono hsub
-    · exact Eventually.of_forall fun y =>
-        Set.indicator_nonneg (fun z hz => pow_nonneg (hA01 hz).1 _) y
-  have hball : 0 < volume.real (ball (0 : EuclideanSpace ℝ (Fin d)) 1) :=
-    ENNReal.toReal_pos (measure_ball_pos _ _ one_pos).ne' measure_ball_lt_top.ne
-  have hreal : 0 < volume.real ((fun y : EuclideanSpace ℝ (Fin d) => ‖y‖) ⁻¹' A) := by
-    rw [← hlhs, hpolar, hrad, finrank_euclideanSpace_fin, smul_eq_mul]
-    exact nsmul_pos (mul_pos hball hgpos) (by omega)
-  by_contra h0
-  rw [not_lt, nonpos_iff_eq_zero] at h0
-  simp [measureReal_def, h0] at hreal
-
 /-- **Steinhaus contrast.** If `K ⊆ ℝ^d` (`d ≥ 1`) is compact of positive volume, then `Δ(K)`
 contains an interval `[0, ε)`, hence an affine copy of the dyadic sequence. -/
 theorem containsDyadicCopy_distSet_of_volume_pos {d : ℕ} (hd : 1 ≤ d)
@@ -147,6 +100,44 @@ theorem containsDyadicCopy_distSet_of_volume_pos {d : ℕ} (hd : 1 ≤ d)
   obtain ⟨x, hx, y, hy, hxy⟩ := hball hvmem
   exact ⟨x, hx, y, hy, by simp only at hxy; rw [dist_eq_norm, hxy, hv]⟩
 
+/-- A nondegenerate closed interval contains an affine copy of the dyadic sequence. -/
+theorem containsDyadicCopy_Icc {a b : ℝ} (hab : a < b) : ContainsDyadicCopy (Icc a b) := by
+  refine ⟨a, b - a, (sub_pos.2 hab).ne', fun n _ => ⟨?_, ?_⟩⟩
+  · have := dyadicPoint_pos n
+    nlinarith
+  · have h1 : dyadicPoint n ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
+    nlinarith
+
+/-- **Every other pin sees an interval.** If `d ≥ 2`, `p ≠ 0` and `K` contains the sphere of
+radius `ρ > 0` about the origin, then `Δ_p(K) ⊇ [|‖p‖ - ρ|, ‖p‖ + ρ]`. -/
+theorem Icc_subset_pinnedDistSet {d : ℕ} (hd : 2 ≤ d) {K : Set (EuclideanSpace ℝ (Fin d))}
+    {ρ : ℝ} (hρ : 0 < ρ) (hS : sphere (0 : EuclideanSpace ℝ (Fin d)) ρ ⊆ K)
+    {p : EuclideanSpace ℝ (Fin d)} (hp : p ≠ 0) :
+    Icc |‖p‖ - ρ| (‖p‖ + ρ) ⊆ pinnedDistSet p K := by
+  have hrank : 1 < Module.rank ℝ (EuclideanSpace ℝ (Fin d)) := by
+    rw [← Module.finrank_eq_rank, finrank_euclideanSpace_fin]
+    exact_mod_cast hd
+  have hconn := ((isConnected_sphere hrank (0 : EuclideanSpace ℝ (Fin d)) hρ.le).image
+    (fun y => dist p y) (continuous_const.dist continuous_id).continuousOn).isPreconnected
+  have hpn : 0 < ‖p‖ := norm_pos_iff.2 hp
+  set u : EuclideanSpace ℝ (Fin d) := (ρ / ‖p‖) • p with hu
+  have hu_mem : u ∈ sphere (0 : EuclideanSpace ℝ (Fin d)) ρ := by
+    rw [mem_sphere_zero_iff_norm, hu, norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity),
+      div_mul_cancel₀ _ hpn.ne']
+  have hneg_mem : -u ∈ sphere (0 : EuclideanSpace ℝ (Fin d)) ρ := by
+    rwa [mem_sphere_zero_iff_norm, norm_neg, ← mem_sphere_zero_iff_norm]
+  have hdist_u : dist p u = |‖p‖ - ρ| := by
+    rw [dist_eq_norm, hu, show p - (ρ / ‖p‖) • p = (1 - ρ / ‖p‖) • p by
+      rw [sub_smul, one_smul], norm_smul, Real.norm_eq_abs, ← abs_of_pos hpn, ← abs_mul,
+      abs_of_pos hpn, sub_mul, one_mul, div_mul_cancel₀ _ hpn.ne']
+  have hdist_neg : dist p (-u) = ‖p‖ + ρ := by
+    rw [dist_eq_norm, sub_neg_eq_add, hu, show p + (ρ / ‖p‖) • p = (1 + ρ / ‖p‖) • p by
+      rw [add_smul, one_smul], norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity), add_mul,
+      one_mul, div_mul_cancel₀ _ hpn.ne']
+  intro r hr
+  obtain ⟨y, hy, rfl⟩ := hconn.Icc_subset ⟨u, hu_mem, hdist_u⟩ ⟨-u, hneg_mem, hdist_neg⟩ hr
+  exact ⟨y, hS hy, rfl⟩
+
 /-- **Theorem B.** Assume the dyadic case of the Erdős similarity conjecture. For every `d ≥ 1`
 and `η ∈ (0,1)` there is a compact set `K` in the closed unit ball of `ℝ^d`, containing the origin,
 of positive volume and full Hausdorff dimension `d`, such that the pinned distance set
@@ -156,8 +147,10 @@ theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) {d : ℕ} (hd
     {η : ℝ} (hη0 : 0 < η) (hη1 : η < 1) :
     ∃ K : Set (EuclideanSpace ℝ (Fin d)),
       IsCompact K ∧ K ⊆ closedBall 0 1 ∧ (0 : EuclideanSpace ℝ (Fin d)) ∈ K ∧
+      ENNReal.ofReal ((1 - η) ^ d) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) 1) ≤ volume K ∧
       0 < volume K ∧ dimH K = d ∧
-      ¬ ContainsDyadicCopy (pinnedDistSet 0 K) ∧ ContainsDyadicCopy (distSet K) := by
+      ¬ ContainsDyadicCopy (pinnedDistSet 0 K) ∧ ContainsDyadicCopy (distSet K) ∧
+      (2 ≤ d → ∀ p, p ≠ 0 → ContainsDyadicCopy (pinnedDistSet p K)) := by
   obtain ⟨A, hA01, hAc, hAvol, hAavoid⟩ := hDy η hη0 hη1
   have hApos : 0 < volume A := zero_le.trans_lt hAvol
   set K := (fun y : EuclideanSpace ℝ (Fin d) => ‖y‖) ⁻¹' (insert 0 A) with hK
@@ -170,11 +163,33 @@ theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) {d : ℕ} (hd
     · exact (hA01 h).2
   have hKc : IsCompact K :=
     isCompact_of_isClosed_isBounded hKclosed (isBounded_closedBall.subset hKball)
-  have hKpos : 0 < volume K :=
-    (volume_norm_preimage_pos hd hAc hA01 hApos).trans_le
-      (measure_mono (preimage_mono (subset_insert _ _)))
-  refine ⟨K, hKc, hKball, by simp [hK], hKpos, dimH_eq_of_volume_pos hKpos, ?_,
-    containsDyadicCopy_distSet_of_volume_pos hd hKc hKpos⟩
+  have hAfin : volume A ≠ ∞ := ((measure_mono hA01).trans_lt measure_Icc_lt_top).ne
+  have hAreal : 1 - η < volume.real A :=
+    (ENNReal.ofReal_lt_iff_lt_toReal (by linarith) hAfin).1 hAvol
+  have hKge : ENNReal.ofReal ((1 - η) ^ d) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) 1) ≤
+      volume K := by
+    refine le_trans ?_ ((volume_norm_preimage_ge hd hAc hA01).trans
+      (measure_mono (preimage_mono (subset_insert _ _))))
+    gcongr
+  have hKpos : 0 < volume K := by
+    refine lt_of_lt_of_le ?_ hKge
+    refine ENNReal.mul_pos ?_ (measure_ball_pos _ _ one_pos).ne'
+    exact (ENNReal.ofReal_pos.2 (pow_pos (by linarith) d)).ne'
+  refine ⟨K, hKc, hKball, by simp [hK], hKge, hKpos, dimH_eq_of_volume_pos hKpos, ?_,
+    containsDyadicCopy_distSet_of_volume_pos hd hKc hKpos, ?_⟩
+  rotate_left
+  · intro hd2 p hp
+    obtain ⟨ρ, hρA, hρ0⟩ : (A \ {0}).Nonempty :=
+      nonempty_of_measure_ne_zero (by rw [measure_sdiff_null Real.volume_singleton]; exact hApos.ne')
+    have hρ : 0 < ρ := lt_of_le_of_ne (hA01 hρA).1 (Ne.symm hρ0)
+    have hS : sphere (0 : EuclideanSpace ℝ (Fin d)) ρ ⊆ K := fun y hy => by
+      rw [mem_sphere_zero_iff_norm] at hy
+      show ‖y‖ ∈ insert 0 A
+      rw [hy]; exact Or.inr hρA
+    have hlt : |‖p‖ - ρ| < ‖p‖ + ρ := by
+      have := norm_pos_iff.2 hp
+      rw [abs_lt]; constructor <;> linarith
+    exact (containsDyadicCopy_Icc hlt).mono (Icc_subset_pinnedDistSet hd2 hρ hS hp)
   intro hcopy
   apply not_containsDyadicCopy_insert_zero hAavoid
   refine hcopy.mono ?_

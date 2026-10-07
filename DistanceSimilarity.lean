@@ -1,3 +1,4 @@
 import DistanceSimilarity.Statements
 import DistanceSimilarity.FinitePatterns
+import DistanceSimilarity.RadialVolume
 import DistanceSimilarity.PinnedObstruction
