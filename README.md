@@ -3,7 +3,9 @@
 Lean 4 formalization and paper for
 
 > **Erdős similarity for distance sets: finite patterns, a pinned obstruction, and an open window**
-> Harald Schilly, 2026 — [`paper/main.pdf`](paper/main.pdf)
+> Harald Schilly, 2026. [PDF](paper/distance-set-similarity-schilly-2026.pdf)
+>
+> **New to the topic?** Read the [plain-language explanation](EXPLAINER.md).
 
 For a compact `E ⊂ ℝ^d` let `Δ(E) = {|x − y| : x, y ∈ E}`. The question studied here:
 
@@ -17,7 +19,7 @@ conjecture** (family 084).
 | Result | Content | Lean |
 |---|---|---|
 | Theorem A | `dim_H E > d/2` ⇒ `Δ(E)` contains `x + sF` for every finite `F`, for a positive-measure set of `x` at every small scale `s` (both signs) | `finite_pattern_distSet`, `exists_finite_pattern_distSet` |
-| Theorem B | There is a compact `K ⊂ ℝ^d` with positive volume (so `dim_H K = d`) whose distance set from the origin avoids every affine copy of the dyadic sequence, while `Δ(K)` contains one | `pinned_dyadic_obstruction` |
+| Theorem B | There is a compact `K ⊂ ℝ^d` with volume ≥ (1−η)^d·vol(B) (so `dim_H K = d`) whose distance set from the origin avoids every affine copy of the dyadic sequence, while `Δ(K)` and every other pinned distance set `Δ_p(K)` (d ≥ 2) contain one | `pinned_dyadic_obstruction` |
 | Proposition C | Above the Mattila–Sjölin threshold `(d+1)/2` the answer is yes, so the question is open only for `d/2 < dim_H E ≤ (d+1)/2` | paper only |
 
 ## Status of the inputs: please read
@@ -55,6 +57,22 @@ lake env leanchecker Verify.Unconditional   # replay the whole environment in th
 
 Lake builds in parallel on all cores. On a machine with little RAM, limit the build, e.g.
 `systemd-run --user --scope -p MemoryMax=10G -p MemorySwapMax=0 -p AllowedCPUs=0-5 lake build Verify`.
+
+## Paper
+
+`paper/distance-set-similarity-schilly-2026.tex`; `paper/make-arxiv.sh` builds the PDF and an
+arXiv upload bundle with the `.bbl` included.
+
+## Citation
+
+```bibtex
+@misc{Schilly2026DistanceSimilarity,
+  author       = {Schilly, Harald},
+  title        = {Erd\H{o}s similarity for distance sets: finite patterns, a pinned obstruction, and an open window},
+  year         = {2026},
+  howpublished = {\url{https://github.com/haraldschilly/math-distance-set-similarity}}
+}
+```
 
 ## Use of AI
 

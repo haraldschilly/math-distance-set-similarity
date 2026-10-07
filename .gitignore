@@ -9,3 +9,5 @@
 *.fdb_latexmk
 *.fls
 verify/oai-src/
+arxiv/
+*.tar.gz
