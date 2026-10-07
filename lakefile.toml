@@ -21,3 +21,8 @@ srcDir = "verify/oai-src"
 roots = ["OAI.MeasureTheory.DyadicAvoidance.Main",
          "OAI.MeasureTheory.Falconer.Campaign123PlanarFurstenbergProof"]
 globs = ["OAI.+"]
+
+[[lean_lib]]
+name = "Verify"
+srcDir = "verify"
+roots = ["Verify.Dyadic", "Verify.Falconer", "Verify.Unconditional"]
