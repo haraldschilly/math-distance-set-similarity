@@ -1,56 +1,22 @@
-import DistanceSimilarity.Statements
+import DistanceSimilarity.Patterns
 import DistanceSimilarity.RadialVolume
 
 /-!
-# Theorem B: pinned distance sets are not universal hosts for the dyadic sequence
+# Theorem B: pinned distance sets are not universal hosts for geometric sequences
 
-Let `A ⊆ [0,1]` be a compact set of measure `> 1 - η` containing no affine copy of
-`D = {2⁻ⁿ : n ≥ 1}` (the dyadic case of the Erdős similarity conjecture,
-`DyadicAvoidanceStatement`). The radial set `K = {y ∈ ℝ^d : ‖y‖ ∈ A ∪ {0}}` is compact, has
-positive volume (hence full Hausdorff dimension `d`), and its pinned distance set from the origin
-is contained in `A ∪ {0}`, so it contains no affine copy of `D`. In contrast, the full distance
-set `Δ(K)` contains an interval `[0, ε)` (Steinhaus), hence affine copies of `D`.
+Let `0 < q < 1` and let `A ⊆ [0,1]` be a compact set of measure `> 1 - η` containing no affine
+copy of `{qⁿ : n ≥ 1}` (`GeometricAvoidanceStatement q`; for `q = 1/2` this is OpenAI's formally
+proved `DyadicAvoidanceStatement`). The radial set `K = {y ∈ ℝ^d : ‖y‖ ∈ A ∪ {0}}` is compact, has
+volume `≥ (1-η)^d · vol(B)` (hence full Hausdorff dimension `d`), and its pinned distance set from
+the origin is contained in `A ∪ {0}`, so it contains no affine copy of `{qⁿ}`. In contrast, the full
+distance set `Δ(K)` and, for `d ≥ 2`, every other pinned distance set contain intervals, hence
+affine copies of `{qⁿ}`.
 -/
 
 open MeasureTheory Set Filter Topology Metric
 open scoped ENNReal NNReal
 
 namespace DistanceSimilarity
-
-lemma dyadicPoint_add (m n : ℕ) : dyadicPoint (m + n) = dyadicPoint m * dyadicPoint n := by
-  simp [dyadicPoint, pow_add]
-
-lemma dyadicPoint_injective : Function.Injective dyadicPoint :=
-  pow_right_injective₀ (by norm_num) (by norm_num)
-
-lemma dyadicPoint_pos (n : ℕ) : 0 < dyadicPoint n := by
-  unfold dyadicPoint; positivity
-
-lemma ContainsDyadicCopy.mono {P Q : Set ℝ} (h : ContainsDyadicCopy P) (hPQ : P ⊆ Q) :
-    ContainsDyadicCopy Q := by
-  obtain ⟨x, s, hs, hx⟩ := h
-  exact ⟨x, s, hs, fun n hn => hPQ (hx n hn)⟩
-
-/-- Adding the point `0` to a set that avoids every affine copy of `D` keeps this property:
-a copy meets `0` at most once, and its tail after that point is again an affine copy of `D`. -/
-theorem not_containsDyadicCopy_insert_zero {A : Set ℝ}
-    (hA : ∀ x s : ℝ, s ≠ 0 → ∃ n : ℕ, 1 ≤ n ∧ x + s * dyadicPoint n ∉ A) :
-    ¬ ContainsDyadicCopy (insert 0 A) := by
-  rintro ⟨x, s, hs, hall⟩
-  by_cases h0 : ∃ m : ℕ, x + s * dyadicPoint m = 0
-  · obtain ⟨m, hm⟩ := h0
-    obtain ⟨n, hn, hnA⟩ := hA x (s * dyadicPoint m) (mul_ne_zero hs (dyadicPoint_pos m).ne')
-    rcases hall (m + n) (by omega) with hzero | hmem
-    · have : dyadicPoint (m + n) = dyadicPoint m :=
-        mul_left_cancel₀ hs (by linarith)
-      have := dyadicPoint_injective this
-      omega
-    · exact hnA (by rwa [dyadicPoint_add, ← mul_assoc] at hmem)
-  · push Not at h0
-    obtain ⟨n, hn, hnA⟩ := hA x s hs
-    rcases hall n hn with hzero | hmem
-    · exact h0 n hzero
-    · exact hnA hmem
 
 /-- A subset of `ℝ^d` of positive volume has Hausdorff dimension `d`. -/
 theorem dimH_eq_of_volume_pos {d : ℕ} {K : Set (EuclideanSpace ℝ (Fin d))}
@@ -77,36 +43,28 @@ theorem dimH_eq_of_volume_pos {d : ℕ} {K : Set (EuclideanSpace ℝ (Fin d))}
       exact hK.ne'
     simpa using le_dimH_of_hausdorffMeasure_ne_zero hH
 
-/-- **Steinhaus contrast.** If `K ⊆ ℝ^d` (`d ≥ 1`) is compact of positive volume, then `Δ(K)`
-contains an interval `[0, ε)`, hence an affine copy of the dyadic sequence. -/
-theorem containsDyadicCopy_distSet_of_volume_pos {d : ℕ} (hd : 1 ≤ d)
+/-- **Lemma 4.4 (Steinhaus).** If `K ⊆ ℝ^d` (`d ≥ 1`) is compact of positive volume, then `Δ(K)`
+contains an interval `[0, ε)`; in particular it has nonempty interior. -/
+theorem exists_Ico_subset_distSet {d : ℕ} (hd : 1 ≤ d)
     {K : Set (EuclideanSpace ℝ (Fin d))} (hKc : IsCompact K) (hK : 0 < volume K) :
-    ContainsDyadicCopy (distSet K) := by
+    ∃ ε > 0, Ico 0 ε ⊆ distSet K := by
   have hst := Measure.sub_mem_nhds_zero_of_addHaar_pos_ne_top volume K hKc.measurableSet hK
     hKc.measure_lt_top.ne
   obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.1 hst
-  refine ⟨0, ε / 2, by positivity, fun n _ => ?_⟩
-  have hdp : dyadicPoint n ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
-  set r := 0 + ε / 2 * dyadicPoint n with hr
-  have hr0 : 0 ≤ r := by have := dyadicPoint_pos n; rw [hr]; positivity
-  have hrε : r < ε := by
-    rw [hr, zero_add]
-    calc ε / 2 * dyadicPoint n ≤ ε / 2 * 1 := by gcongr
-      _ < ε := by linarith
+  refine ⟨ε, hε, fun r hr => ?_⟩
   set v : EuclideanSpace ℝ (Fin d) := EuclideanSpace.single ⟨0, by omega⟩ r
-  have hv : ‖v‖ = r := by simp [v, abs_of_nonneg hr0]
+  have hv : ‖v‖ = r := by simp [v, abs_of_nonneg hr.1]
   have hvmem : v ∈ ball (0 : EuclideanSpace ℝ (Fin d)) ε := by
-    rw [mem_ball, dist_zero_right, hv]; exact hrε
+    rw [mem_ball, dist_zero_right, hv]; exact hr.2
   obtain ⟨x, hx, y, hy, hxy⟩ := hball hvmem
   exact ⟨x, hx, y, hy, by simp only at hxy; rw [dist_eq_norm, hxy, hv]⟩
 
-/-- A nondegenerate closed interval contains an affine copy of the dyadic sequence. -/
-theorem containsDyadicCopy_Icc {a b : ℝ} (hab : a < b) : ContainsDyadicCopy (Icc a b) := by
-  refine ⟨a, b - a, (sub_pos.2 hab).ne', fun n _ => ⟨?_, ?_⟩⟩
-  · have := dyadicPoint_pos n
-    nlinarith
-  · have h1 : dyadicPoint n ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
-    nlinarith
+theorem interior_distSet_nonempty_of_volume_pos {d : ℕ} (hd : 1 ≤ d)
+    {K : Set (EuclideanSpace ℝ (Fin d))} (hKc : IsCompact K) (hK : 0 < volume K) :
+    (interior (distSet K)).Nonempty := by
+  obtain ⟨ε, hε, hsub⟩ := exists_Ico_subset_distSet hd hKc hK
+  exact ⟨ε / 2, interior_mono (Ioo_subset_Ico_self.trans hsub)
+    (by rw [interior_Ioo]; constructor <;> linarith)⟩
 
 /-- **Every other pin sees an interval.** If `d ≥ 2`, `p ≠ 0` and `K` contains the sphere of
 radius `ρ > 0` about the origin, then `Δ_p(K) ⊇ [|‖p‖ - ρ|, ‖p‖ + ρ]`. -/
@@ -138,20 +96,22 @@ theorem Icc_subset_pinnedDistSet {d : ℕ} (hd : 2 ≤ d) {K : Set (EuclideanSpa
   obtain ⟨y, hy, rfl⟩ := hconn.Icc_subset ⟨u, hu_mem, hdist_u⟩ ⟨-u, hneg_mem, hdist_neg⟩ hr
   exact ⟨y, hS hy, rfl⟩
 
-/-- **Theorem B.** Assume the dyadic case of the Erdős similarity conjecture. For every `d ≥ 1`
-and `η ∈ (0,1)` there is a compact set `K` in the closed unit ball of `ℝ^d`, containing the origin,
-of positive volume and full Hausdorff dimension `d`, such that the pinned distance set
-`{‖y‖ : y ∈ K}` contains no nontrivial affine copy of `{2⁻ⁿ : n ≥ 1}`, while the full distance set
-`Δ(K)` does contain one. -/
-theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) {d : ℕ} (hd : 1 ≤ d)
+/-- **Theorem B, general ratio.** Assume the geometric case of the Erdős similarity conjecture
+for the ratio `q ∈ (0,1)`. For every `d ≥ 1` and `η ∈ (0,1)` there is a compact set `K` in the closed
+unit ball of `ℝ^d`, containing the origin, of volume at least `(1-η)^d · vol(B(0,1))` and full
+Hausdorff dimension `d`, such that the pinned distance set `{‖y‖ : y ∈ K}` contains no nontrivial
+affine copy of `{qⁿ : n ≥ 1}`, while the full distance set `Δ(K)` does contain one, and for `d ≥ 2`
+so does every pinned distance set `Δ_p(K)` with `p ≠ 0`. -/
+theorem pinned_geometric_obstruction {q : ℝ} (hq0 : 0 < q) (hq1 : q < 1)
+    (hG : GeometricAvoidanceStatement q) {d : ℕ} (hd : 1 ≤ d)
     {η : ℝ} (hη0 : 0 < η) (hη1 : η < 1) :
     ∃ K : Set (EuclideanSpace ℝ (Fin d)),
       IsCompact K ∧ K ⊆ closedBall 0 1 ∧ (0 : EuclideanSpace ℝ (Fin d)) ∈ K ∧
       ENNReal.ofReal ((1 - η) ^ d) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) 1) ≤ volume K ∧
       0 < volume K ∧ dimH K = d ∧
-      ¬ ContainsDyadicCopy (pinnedDistSet 0 K) ∧ ContainsDyadicCopy (distSet K) ∧
-      (2 ≤ d → ∀ p, p ≠ 0 → ContainsDyadicCopy (pinnedDistSet p K)) := by
-  obtain ⟨A, hA01, hAc, hAvol, hAavoid⟩ := hDy η hη0 hη1
+      ¬ ContainsGeomCopy q (pinnedDistSet 0 K) ∧ ContainsGeomCopy q (distSet K) ∧
+      (2 ≤ d → ∀ p, p ≠ 0 → ContainsGeomCopy q (pinnedDistSet p K)) := by
+  obtain ⟨A, hA01, hAc, hAvol, hAavoid⟩ := hG η hη0 hη1
   have hApos : 0 < volume A := zero_le.trans_lt hAvol
   set K := (fun y : EuclideanSpace ℝ (Fin d) => ‖y‖) ⁻¹' (insert 0 A) with hK
   have hKclosed : IsClosed K := (hAc.insert 0).isClosed.preimage continuous_norm
@@ -176,7 +136,8 @@ theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) {d : ℕ} (hd
     refine ENNReal.mul_pos ?_ (measure_ball_pos _ _ one_pos).ne'
     exact (ENNReal.ofReal_pos.2 (pow_pos (by linarith) d)).ne'
   refine ⟨K, hKc, hKball, by simp [hK], hKge, hKpos, dimH_eq_of_volume_pos hKpos, ?_,
-    containsDyadicCopy_distSet_of_volume_pos hd hKc hKpos, ?_⟩
+    containsGeomCopy_of_interior_nonempty hq0 hq1
+      (interior_distSet_nonempty_of_volume_pos hd hKc hKpos), ?_⟩
   rotate_left
   · intro hd2 p hp
     obtain ⟨ρ, hρA, hρ0⟩ : (A \ {0}).Nonempty :=
@@ -189,11 +150,26 @@ theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) {d : ℕ} (hd
     have hlt : |‖p‖ - ρ| < ‖p‖ + ρ := by
       have := norm_pos_iff.2 hp
       rw [abs_lt]; constructor <;> linarith
-    exact (containsDyadicCopy_Icc hlt).mono (Icc_subset_pinnedDistSet hd2 hρ hS hp)
+    exact (containsGeomCopy_Icc hq0 hq1 hlt).mono (Icc_subset_pinnedDistSet hd2 hρ hS hp)
   intro hcopy
-  apply not_containsDyadicCopy_insert_zero hAavoid
+  apply not_containsGeomCopy_insert_zero hq0 hq1 hAavoid
   refine hcopy.mono ?_
   rintro r ⟨y, hy, rfl⟩
   simpa [dist_zero_left, hK] using hy
+
+/-- **Theorem B.** Assume the dyadic case of the Erdős similarity conjecture. For every `d ≥ 1`
+and `η ∈ (0,1)` there is a compact set `K` in the closed unit ball of `ℝ^d`, containing the origin,
+of volume at least `(1-η)^d · vol(B(0,1))` and full Hausdorff dimension `d`, such that the pinned
+distance set `{‖y‖ : y ∈ K}` contains no nontrivial affine copy of `{2⁻ⁿ : n ≥ 1}`, while the full
+distance set `Δ(K)` does contain one, and for `d ≥ 2` so does every `Δ_p(K)` with `p ≠ 0`. -/
+theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) {d : ℕ} (hd : 1 ≤ d)
+    {η : ℝ} (hη0 : 0 < η) (hη1 : η < 1) :
+    ∃ K : Set (EuclideanSpace ℝ (Fin d)),
+      IsCompact K ∧ K ⊆ closedBall 0 1 ∧ (0 : EuclideanSpace ℝ (Fin d)) ∈ K ∧
+      ENNReal.ofReal ((1 - η) ^ d) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) 1) ≤ volume K ∧
+      0 < volume K ∧ dimH K = d ∧
+      ¬ ContainsDyadicCopy (pinnedDistSet 0 K) ∧ ContainsDyadicCopy (distSet K) ∧
+      (2 ≤ d → ∀ p, p ≠ 0 → ContainsDyadicCopy (pinnedDistSet p K)) :=
+  pinned_geometric_obstruction (by norm_num) (by norm_num) hDy hd hη0 hη1
 
 end DistanceSimilarity

@@ -104,4 +104,61 @@ theorem exists_finite_pattern_distSet (hFal : FalconerStatement) {d : ℕ} (hd :
   obtain ⟨y, hy⟩ := pick (-t) (by rwa [abs_neg, abs_of_pos ht0])
   exact ⟨⟨x, t, ht0, htδ, hx⟩, ⟨y, -t, by linarith, by linarith, hy⟩⟩
 
+/-- **Distances at every scale** (Section 1.2). If `dimH E > d/2`, then `Δ(E) ∩ [0, r]` has
+positive measure for every `r > 0`: cover `E` by finitely many balls of radius `r/2`; one of the
+pieces still has dimension `> d/2`, and its distances are at most `r`. -/
+theorem volume_distSet_inter_Icc_pos (hFal : FalconerStatement) {d : ℕ} (hd : 2 ≤ d)
+    {E : Set (EuclideanSpace ℝ (Fin d))} (hE : IsCompact E) (hdim : (d : ℝ≥0∞) / 2 < dimH E)
+    {r : ℝ} (hr : 0 < r) : 0 < volume (distSet E ∩ Icc 0 r) := by
+  obtain ⟨t, -, hcover⟩ := hE.elim_nhds_subcover (fun x => Metric.closedBall x (r / 2))
+    (fun x _ => Metric.closedBall_mem_nhds x (by positivity))
+  have hEeq : E = ⋃ c ∈ t, E ∩ Metric.closedBall c (r / 2) := by
+    ext y; constructor
+    · intro hy
+      obtain ⟨c, hc, hyc⟩ := mem_iUnion₂.1 (hcover hy)
+      exact mem_iUnion₂.2 ⟨c, hc, hy, hyc⟩
+    · intro hy
+      obtain ⟨c, _, hyc⟩ := mem_iUnion₂.1 hy
+      exact hyc.1
+  have hdimU : dimH E = ⨆ c ∈ (t : Set (EuclideanSpace ℝ (Fin d))),
+      dimH (E ∩ Metric.closedBall c (r / 2)) := by
+    conv_lhs => rw [hEeq]
+    exact dimH_bUnion t.countable_toSet _
+  rw [hdimU] at hdim
+  obtain ⟨c, hc, hdimc⟩ : ∃ c ∈ (t : Set (EuclideanSpace ℝ (Fin d))),
+      (d : ℝ≥0∞) / 2 < dimH (E ∩ Metric.closedBall c (r / 2)) := by
+    by_contra h
+    push Not at h
+    exact absurd hdim (not_lt.2 (iSup₂_le h))
+  have hcpt : IsCompact (E ∩ Metric.closedBall c (r / 2)) := hE.inter_right Metric.isClosed_closedBall
+  refine (hFal d hd _ hcpt hdimc).trans_le (measure_mono ?_)
+  rintro _ ⟨x, hx, y, hy, rfl⟩
+  refine ⟨⟨x, hx.1, y, hy.1, rfl⟩, dist_nonneg, ?_⟩
+  have := dist_triangle_right x y c
+  have hx' := Metric.mem_closedBall.1 hx.2
+  have hy' := Metric.mem_closedBall.1 hy.2
+  linarith
+
+/-- **Theorem A, planar form** (Remark 3.2). The set of pairs `(s, x)` with `x + s • F ⊆ Δ(E)` has
+positive planar Lebesgue measure. -/
+theorem volume_pattern_pairs_pos (hFal : FalconerStatement) {d : ℕ} (hd : 2 ≤ d)
+    {E : Set (EuclideanSpace ℝ (Fin d))} (hE : IsCompact E) (hdim : (d : ℝ≥0∞) / 2 < dimH E)
+    (F : Finset ℝ) :
+    0 < volume {p : ℝ × ℝ | ∀ a ∈ F, p.2 + p.1 * a ∈ distSet E} := by
+  set S := {p : ℝ × ℝ | ∀ a ∈ F, p.2 + p.1 * a ∈ distSet E} with hS
+  have hSc : IsClosed S := by
+    have hSeq : S = ⋂ a ∈ (F : Set ℝ), (fun p : ℝ × ℝ => p.2 + p.1 * a) ⁻¹' distSet E := by
+      ext p; simp [hS]
+    rw [hSeq]
+    exact isClosed_biInter fun a _ =>
+      (isCompact_distSet hE).isClosed.preimage (by fun_prop)
+  rw [Measure.volume_eq_prod, Measure.prod_apply hSc.measurableSet]
+  obtain ⟨ε, hε, hball⟩ := Metric.eventually_nhds_iff.1 (finite_pattern_distSet hFal hd hE hdim F)
+  have hmeas : Measurable fun s : ℝ => volume (Prod.mk s ⁻¹' S) :=
+    measurable_measure_prodMk_left hSc.measurableSet
+  rw [lintegral_pos_iff_support hmeas]
+  refine lt_of_lt_of_le ?_ (measure_mono (s := Metric.ball (0 : ℝ) ε) fun s hs => ?_)
+  · exact Metric.measure_ball_pos _ _ hε
+  · exact (hball hs).ne'
+
 end DistanceSimilarity
