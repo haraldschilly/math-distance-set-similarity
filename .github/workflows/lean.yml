@@ -12,8 +12,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
         with:
-          build-args: "DistanceSimilarity"
+          # --wfail: any warning (including a `sorry`) fails the build
+          build-args: "DistanceSimilarity --wfail"
           test: false
           lint: false
-      - name: Print axioms
-        run: lake env lean verify/Axioms.lean
+      - name: Check axioms (only propext, Classical.choice, Quot.sound allowed)
+        run: lake env lean verify/Axioms.lean 2>&1 | python3 verify/check_axioms.py verify/Axioms.lean

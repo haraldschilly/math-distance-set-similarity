@@ -26,7 +26,8 @@ conjecture** (family 084).
 
 **Every numbered statement in the paper has a Lean proof** (table in the paper, Section 7, and in
 [EXPLAINER.md](EXPLAINER.md#76-where-each-paper-statement-lives)). `#print axioms` shows only
-`propext`, `Classical.choice`, `Quot.sound` for all of them (`lake env lean verify/Axioms.lean`).
+`propext`, `Classical.choice`, `Quot.sound` for all of them. CI enforces this on every push: the build
+fails on any warning (including `sorry`), and `verify/check_axioms.py` fails on any other axiom.
 
 ## Trust base: please read
 
