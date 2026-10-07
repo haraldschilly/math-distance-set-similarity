@@ -7,13 +7,13 @@ import DistanceSimilarity.PinnedObstruction
 * `distSet_containsAffineCopy_of_interior`, `distSet_containsGeomCopy_of_volume_pos`: if `Δ(E)`
   has nonempty interior (for instance if `E` has positive volume), it contains affine copies of every
   bounded set and of every geometric sequence.
-* `counterexample_properties`: a counterexample to Question A with `dimH E > d/2` has a distance
+* `counterexample_properties`: a counterexample to Question 1.1 with `dimH E > d/2` has a distance
   set of positive measure but empty interior, and `E` has volume zero.
-* `window_of_mattilaSjolin` (Remark C'): if moreover the classical Mattila–Sjölin theorem is
-  assumed (`MattilaSjolinStatement`, not formalized), such a counterexample has
+* `window_of_mattilaSjolin` (Remark 5.1): if moreover the classical Mattila–Sjölin theorem is
+  assumed (`MattilaSjolinStatement`, discharged in `verify/`), such a counterexample has
   `dimH E ≤ (d+1)/2`.
-* `not_containsGeomCopy_pinnedDistSet_iff`: the reformulation used in the open questions
-  (Section 6): a pinned distance set avoids all copies iff every copy meets a radius whose sphere
+* `not_containsGeomCopy_pinnedDistSet_iff` (Lemma 6.1): the reformulation used in the open
+  questions (Section 6): a pinned distance set avoids all copies iff every copy meets a radius whose sphere
   misses `E`.
 -/
 
@@ -25,18 +25,18 @@ namespace DistanceSimilarity
 variable {d : ℕ}
 
 /-- **Proposition C(i).** If `Δ(E)` has nonempty interior, it contains an affine copy of every
-bounded set `F ⊆ [0, M]`. -/
+bounded set `F`. -/
 theorem distSet_containsAffineCopy_of_interior {E : Set (EuclideanSpace ℝ (Fin d))}
-    (hint : (interior (distSet E)).Nonempty) {M : ℝ} (hM : 0 < M) {F : Set ℝ}
-    (hF : F ⊆ Icc 0 M) : ContainsAffineCopy F (distSet E) :=
-  containsAffineCopy_of_interior_nonempty hint hM hF
+    (hint : (interior (distSet E)).Nonempty) {F : Set ℝ} (hF : Bornology.IsBounded F) :
+    ContainsAffineCopy F (distSet E) :=
+  containsAffineCopy_of_interior_nonempty hint hF
 
 /-- **Proposition C(ii).** If `E ⊆ ℝ^d` (`d ≥ 1`) is compact of positive volume, then `Δ(E)`
-contains an affine copy of every bounded set `F ⊆ [0, M]` and of every geometric sequence. -/
+contains an affine copy of every bounded set `F` (and, below, of every geometric sequence). -/
 theorem distSet_containsAffineCopy_of_volume_pos (hd : 1 ≤ d)
     {E : Set (EuclideanSpace ℝ (Fin d))} (hE : IsCompact E) (hvol : 0 < volume E)
-    {M : ℝ} (hM : 0 < M) {F : Set ℝ} (hF : F ⊆ Icc 0 M) : ContainsAffineCopy F (distSet E) :=
-  distSet_containsAffineCopy_of_interior (interior_distSet_nonempty_of_volume_pos hd hE hvol) hM hF
+    {F : Set ℝ} (hF : Bornology.IsBounded F) : ContainsAffineCopy F (distSet E) :=
+  distSet_containsAffineCopy_of_interior (interior_distSet_nonempty_of_volume_pos hd hE hvol) hF
 
 theorem distSet_containsGeomCopy_of_volume_pos (hd : 1 ≤ d)
     {E : Set (EuclideanSpace ℝ (Fin d))} (hE : IsCompact E) (hvol : 0 < volume E)
@@ -56,10 +56,10 @@ theorem counterexample_properties (hFal : FalconerStatement) (hd : 2 ≤ d)
   · by_contra h
     exact hno (distSet_containsGeomCopy_of_volume_pos (by omega) hE (pos_iff_ne_zero.2 h) hq0 hq1)
 
-/-- **Remark C' (uses the unformalized Mattila–Sjölin theorem as an explicit hypothesis).**
+/-- **Remark 5.1 (takes the Mattila–Sjölin theorem as an explicit hypothesis).**
 Under `MattilaSjolinStatement`, a compact `E ⊆ ℝ^d` whose distance set avoids all affine copies of
-`{qⁿ : n ≥ 1}` has `dimH E ≤ (d+1)/2`. Together with `counterexample_properties`, Question A is open
-only in the window `d/2 < dimH E ≤ (d+1)/2`. -/
+`{qⁿ : n ≥ 1}` has `dimH E ≤ (d+1)/2`. So Question 1.1 is open only in the window
+`d/2 < dimH E ≤ (d+1)/2`. -/
 theorem window_of_mattilaSjolin (hMS : MattilaSjolinStatement) (hd : 2 ≤ d)
     {E : Set (EuclideanSpace ℝ (Fin d))} (hE : IsCompact E)
     {q : ℝ} (hq0 : 0 < q) (hq1 : q < 1) (hno : ¬ ContainsGeomCopy q (distSet E)) :
@@ -67,7 +67,7 @@ theorem window_of_mattilaSjolin (hMS : MattilaSjolinStatement) (hd : 2 ≤ d)
   by_contra h
   exact hno (containsGeomCopy_of_interior_nonempty hq0 hq1 (hMS d hd E hE (not_le.1 h)))
 
-/-- **Reformulation used in the open questions (Section 6).** The pinned distance set `Δ_p(E)`
+/-- **Lemma 6.1 (reformulation used in the open questions).** The pinned distance set `Δ_p(E)`
 contains no affine copy of `{qⁿ : n ≥ 1}` if and only if every such copy `x + s·{qⁿ}` contains a
 radius `r` for which the sphere of radius `r` about `p` misses `E`. -/
 theorem not_containsGeomCopy_pinnedDistSet_iff {q : ℝ} (p : EuclideanSpace ℝ (Fin d))

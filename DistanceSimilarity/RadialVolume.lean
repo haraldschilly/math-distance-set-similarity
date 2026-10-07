@@ -111,7 +111,7 @@ theorem volume_real_norm_preimage {d : ℕ} (hd : 1 ≤ d) {A : Set ℝ} (hAc : 
       setIntegral_measure_zero _ hnull, add_zero, inter_comm]
   rw [← hlhs, hpolar, hrad, finrank_euclideanSpace_fin, smul_eq_mul, nsmul_eq_mul]
 
-/-- **Volume of radial sets.** If `A ⊆ [0,1]` is compact, then
+/-- **Lemma 4.2 (volume of radial sets).** If `A ⊆ [0,1]` is compact, then
 `vol {y ∈ ℝ^d : ‖y‖ ∈ A} ≥ λ(A)^d · vol(B(0,1))`. -/
 theorem volume_norm_preimage_ge {d : ℕ} (hd : 1 ≤ d) {A : Set ℝ} (hAc : IsCompact A)
     (hA01 : A ⊆ Icc 0 1) :

@@ -1,6 +1,7 @@
 import DistanceSimilarity.Statements
 import DistanceSimilarity.Patterns
 import DistanceSimilarity.FinitePatterns
+import DistanceSimilarity.Scales
 import DistanceSimilarity.RadialVolume
 import DistanceSimilarity.PinnedObstruction
 import DistanceSimilarity.Window

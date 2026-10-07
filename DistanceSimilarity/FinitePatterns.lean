@@ -23,7 +23,7 @@ private noncomputable def translate (a : ℝ) : C(ℝ, C(ℝ, ℝ)) :=
 
 private lemma translate_apply (a s x : ℝ) : translate a s x = x + s * a := rfl
 
-/-- **Steinhaus lemma for finite patterns.** A set of positive finite measure contains, for every
+/-- **Lemma 3.1 (Steinhaus lemma for finite patterns).** A set of positive finite measure contains, for every
 sufficiently small `s`, a positive-measure family of translates of `s • F`. -/
 theorem eventually_volume_pattern_pos {S : Set ℝ} (hS : MeasurableSet S) (hfin : volume S ≠ ∞)
     (hpos : 0 < volume S) (F : Finset ℝ) :
@@ -104,7 +104,7 @@ theorem exists_finite_pattern_distSet (hFal : FalconerStatement) {d : ℕ} (hd :
   obtain ⟨y, hy⟩ := pick (-t) (by rwa [abs_neg, abs_of_pos ht0])
   exact ⟨⟨x, t, ht0, htδ, hx⟩, ⟨y, -t, by linarith, by linarith, hy⟩⟩
 
-/-- **Distances at every scale** (Section 1.2). If `dimH E > d/2`, then `Δ(E) ∩ [0, r]` has
+/-- **Lemma 3.3 (distances at every scale).** If `dimH E > d/2`, then `Δ(E) ∩ [0, r]` has
 positive measure for every `r > 0`: cover `E` by finitely many balls of radius `r/2`; one of the
 pieces still has dimension `> d/2`, and its distances are at most `r`. -/
 theorem volume_distSet_inter_Icc_pos (hFal : FalconerStatement) {d : ℕ} (hd : 2 ≤ d)
@@ -139,7 +139,7 @@ theorem volume_distSet_inter_Icc_pos (hFal : FalconerStatement) {d : ℕ} (hd : 
   have hy' := Metric.mem_closedBall.1 hy.2
   linarith
 
-/-- **Theorem A, planar form** (Remark 3.2). The set of pairs `(s, x)` with `x + s • F ⊆ Δ(E)` has
+/-- **Proposition 3.2 (Theorem A, planar form).** The set of pairs `(s, x)` with `x + s • F ⊆ Δ(E)` has
 positive planar Lebesgue measure. -/
 theorem volume_pattern_pairs_pos (hFal : FalconerStatement) {d : ℕ} (hd : 2 ≤ d)
     {E : Set (EuclideanSpace ℝ (Fin d))} (hE : IsCompact E) (hdim : (d : ℝ≥0∞) / 2 < dimH E)

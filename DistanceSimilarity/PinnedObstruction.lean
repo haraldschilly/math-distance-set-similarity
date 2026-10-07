@@ -10,7 +10,7 @@ proved `DyadicAvoidanceStatement`). The radial set `K = {y ∈ ℝ^d : ‖y‖ �
 volume `≥ (1-η)^d · vol(B)` (hence full Hausdorff dimension `d`), and its pinned distance set from
 the origin is contained in `A ∪ {0}`, so it contains no affine copy of `{qⁿ}`. In contrast, the full
 distance set `Δ(K)` and, for `d ≥ 2`, every other pinned distance set contain intervals, hence
-affine copies of `{qⁿ}`.
+affine copies of `{qⁿ}` (Theorems B and 4.6 of the paper).
 -/
 
 open MeasureTheory Set Filter Topology Metric
@@ -18,7 +18,7 @@ open scoped ENNReal NNReal
 
 namespace DistanceSimilarity
 
-/-- A subset of `ℝ^d` of positive volume has Hausdorff dimension `d`. -/
+/-- **Lemma 4.3.** A subset of `ℝ^d` of positive volume has Hausdorff dimension `d`. -/
 theorem dimH_eq_of_volume_pos {d : ℕ} {K : Set (EuclideanSpace ℝ (Fin d))}
     (hK : 0 < volume K) : dimH K = d := by
   apply le_antisymm
@@ -66,7 +66,7 @@ theorem interior_distSet_nonempty_of_volume_pos {d : ℕ} (hd : 1 ≤ d)
   exact ⟨ε / 2, interior_mono (Ioo_subset_Ico_self.trans hsub)
     (by rw [interior_Ioo]; constructor <;> linarith)⟩
 
-/-- **Every other pin sees an interval.** If `d ≥ 2`, `p ≠ 0` and `K` contains the sphere of
+/-- **Lemma 4.5 (every other pin sees an interval).** If `d ≥ 2`, `p ≠ 0` and `K` contains the sphere of
 radius `ρ > 0` about the origin, then `Δ_p(K) ⊇ [|‖p‖ - ρ|, ‖p‖ + ρ]`. -/
 theorem Icc_subset_pinnedDistSet {d : ℕ} (hd : 2 ≤ d) {K : Set (EuclideanSpace ℝ (Fin d))}
     {ρ : ℝ} (hρ : 0 < ρ) (hS : sphere (0 : EuclideanSpace ℝ (Fin d)) ρ ⊆ K)
@@ -96,12 +96,12 @@ theorem Icc_subset_pinnedDistSet {d : ℕ} (hd : 2 ≤ d) {K : Set (EuclideanSpa
   obtain ⟨y, hy, rfl⟩ := hconn.Icc_subset ⟨u, hu_mem, hdist_u⟩ ⟨-u, hneg_mem, hdist_neg⟩ hr
   exact ⟨y, hS hy, rfl⟩
 
-/-- **Theorem B, general ratio.** Assume the geometric case of the Erdős similarity conjecture
+/-- **Theorem 4.6 (Theorem B, general ratio).** Assume the geometric case of the Erdős similarity conjecture
 for the ratio `q ∈ (0,1)`. For every `d ≥ 1` and `η ∈ (0,1)` there is a compact set `K` in the closed
 unit ball of `ℝ^d`, containing the origin, of volume at least `(1-η)^d · vol(B(0,1))` and full
 Hausdorff dimension `d`, such that the pinned distance set `{‖y‖ : y ∈ K}` contains no nontrivial
 affine copy of `{qⁿ : n ≥ 1}`, while the full distance set `Δ(K)` does contain one, and for `d ≥ 2`
-so does every pinned distance set `Δ_p(K)` with `p ≠ 0`. -/
+every pinned distance set `Δ_p(K)` with `p ≠ 0` contains a nondegenerate interval, hence a copy. -/
 theorem pinned_geometric_obstruction {q : ℝ} (hq0 : 0 < q) (hq1 : q < 1)
     (hG : GeometricAvoidanceStatement q) {d : ℕ} (hd : 1 ≤ d)
     {η : ℝ} (hη0 : 0 < η) (hη1 : η < 1) :
@@ -110,7 +110,8 @@ theorem pinned_geometric_obstruction {q : ℝ} (hq0 : 0 < q) (hq1 : q < 1)
       ENNReal.ofReal ((1 - η) ^ d) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) 1) ≤ volume K ∧
       0 < volume K ∧ dimH K = d ∧
       ¬ ContainsGeomCopy q (pinnedDistSet 0 K) ∧ ContainsGeomCopy q (distSet K) ∧
-      (2 ≤ d → ∀ p, p ≠ 0 → ContainsGeomCopy q (pinnedDistSet p K)) := by
+      (2 ≤ d → ∀ p, p ≠ 0 → (∃ a b : ℝ, a < b ∧ Icc a b ⊆ pinnedDistSet p K) ∧
+        ContainsGeomCopy q (pinnedDistSet p K)) := by
   obtain ⟨A, hA01, hAc, hAvol, hAavoid⟩ := hG η hη0 hη1
   have hApos : 0 < volume A := zero_le.trans_lt hAvol
   set K := (fun y : EuclideanSpace ℝ (Fin d) => ‖y‖) ⁻¹' (insert 0 A) with hK
@@ -150,7 +151,8 @@ theorem pinned_geometric_obstruction {q : ℝ} (hq0 : 0 < q) (hq1 : q < 1)
     have hlt : |‖p‖ - ρ| < ‖p‖ + ρ := by
       have := norm_pos_iff.2 hp
       rw [abs_lt]; constructor <;> linarith
-    exact (containsGeomCopy_Icc hq0 hq1 hlt).mono (Icc_subset_pinnedDistSet hd2 hρ hS hp)
+    have hIcc := Icc_subset_pinnedDistSet hd2 hρ hS hp
+    exact ⟨⟨_, _, hlt, hIcc⟩, (containsGeomCopy_Icc hq0 hq1 hlt).mono hIcc⟩
   intro hcopy
   apply not_containsGeomCopy_insert_zero hq0 hq1 hAavoid
   refine hcopy.mono ?_
@@ -161,7 +163,8 @@ theorem pinned_geometric_obstruction {q : ℝ} (hq0 : 0 < q) (hq1 : q < 1)
 and `η ∈ (0,1)` there is a compact set `K` in the closed unit ball of `ℝ^d`, containing the origin,
 of volume at least `(1-η)^d · vol(B(0,1))` and full Hausdorff dimension `d`, such that the pinned
 distance set `{‖y‖ : y ∈ K}` contains no nontrivial affine copy of `{2⁻ⁿ : n ≥ 1}`, while the full
-distance set `Δ(K)` does contain one, and for `d ≥ 2` so does every `Δ_p(K)` with `p ≠ 0`. -/
+distance set `Δ(K)` does contain one, and for `d ≥ 2` every `Δ_p(K)` with `p ≠ 0` contains a
+nondegenerate interval, hence a copy. -/
 theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) {d : ℕ} (hd : 1 ≤ d)
     {η : ℝ} (hη0 : 0 < η) (hη1 : η < 1) :
     ∃ K : Set (EuclideanSpace ℝ (Fin d)),
@@ -169,7 +172,8 @@ theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) {d : ℕ} (hd
       ENNReal.ofReal ((1 - η) ^ d) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) 1) ≤ volume K ∧
       0 < volume K ∧ dimH K = d ∧
       ¬ ContainsDyadicCopy (pinnedDistSet 0 K) ∧ ContainsDyadicCopy (distSet K) ∧
-      (2 ≤ d → ∀ p, p ≠ 0 → ContainsDyadicCopy (pinnedDistSet p K)) :=
+      (2 ≤ d → ∀ p, p ≠ 0 → (∃ a b : ℝ, a < b ∧ Icc a b ⊆ pinnedDistSet p K) ∧
+        ContainsDyadicCopy (pinnedDistSet p K)) :=
   pinned_geometric_obstruction (by norm_num) (by norm_num) hDy hd hη0 hη1
 
 end DistanceSimilarity

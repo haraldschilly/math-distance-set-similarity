@@ -81,32 +81,91 @@ shell of radius r for every number r in A. Like an onion, but with the layers ch
 
 **Proposition C: where the real question lives.** If the dimension is more than (d+1)/2, the
 distance set is known to contain a whole interval (Mattila–Sjölin, 1999), so it contains the
-pattern. The question is therefore **open only for dimensions between d/2 and (d+1)/2**. A
-counterexample in that range would also give distance sets that are fat but contain no interval.
-We could not find in the literature whether such sets exist in that range.
+pattern. The question is therefore **open only for dimensions between d/2 and (d+1)/2**.
 
-## 6. What "formalized in Lean" means
+It sits next to a known open problem: in that range, must the distance set contain a whole
+interval? If yes, our question is answered yes too. A counterexample to our question would instead
+give the first known sets of dimension above d/2 whose distance set is fat but contains no interval;
+the only known examples of that kind have dimension at most d/2.
+
+**Proposition 3.4: fat at every scale is not enough.** Falconer's theorem shows more than fatness:
+the distance set is fat in every interval [0, r]. That alone does not force the pattern. Shrunken
+copies of the bad set A, placed at scales 1, 1/8, 1/64, ..., give a set that is fat at every scale
+and still avoids every copy of 1/2, 1/4, 1/8, ...
+
+**One bad center is the most one can expect.** For a set of positive volume in dimension ≥ 2, a
+classical theorem about averages over spheres (Stein, Bourgain) shows that almost every point sees
+all small distances. So the "onion" center of Theorem B is necessarily exceptional. This remark is
+not formalized.
+
+## 6. What is new here, and what isn't
+
+**The core is the question, not the theorems.** The main contribution is the question itself:
+can distance sets, which have extra structure, escape the dyadic obstruction? The second is
+pinning down where the answer is unknown. As far as we could find, nobody had asked this before.
+It only became a sensible question in 2026: Falconer's theorem makes these distance sets fat, and
+the dyadic result shows that fat alone is not enough.
+
+**The theorems are short.** Each result is a short argument on top of the deep inputs. Theorem A
+is Falconer's theorem plus a classical argument from 1920. Proposition 3.4 places shrunken copies
+of the bad set A at different scales. Proposition C combines known facts.
+
+**The onion is a standard trick.** Building a set out of spheres whose radii come from a chosen set
+A is the obvious way to control the distances from one point. Specialists would not see it as new.
+What is new is feeding in OpenAI's bad set A, which was not possible before their result. Its main
+property is almost automatic: the distances from the center are exactly the radii. Its real
+message is the contrast. The center is bad, every other point sees whole intervals, and in any set
+of positive volume almost every point does (Remark 4.7). So the question has to be about distances
+between many points, not from a single one. Note also that Theorem B uses only the dyadic result;
+Falconer's theorem enters in Theorem A and Proposition C.
+
+**We are not hunting for a counterexample.** The paper proves neither answer. The onion is a
+counterexample only to the one-point version of the question. Its full distance set contains a
+whole interval, and therefore the pattern. In fact no set of positive volume can be a
+counterexample. A real counterexample would have to be thin, with dimension between d/2 and
+(d+1)/2, and its distance set would have to be fat but contain no interval. No set like that is
+known. Some experts believe that dimension above d/2 always forces an interval; if they are right,
+the answer is "yes". So if anything, the expected answer is "yes".
+
+**Is the open range within reach?** Probably not with current tools.
+- A "yes" needs more than fatness, even fatness at every scale (Proposition 3.4). The only known
+  way to get more is a whole interval. That threshold has not moved below (d+1)/2 since 1999, as
+  far as we found, even while the threshold for fatness came down to d/2. OpenAI's Falconer proof
+  gives fatness and, as stated, nothing stronger.
+- A "no" needs a set of dimension above d/2 whose distances are all under control. The known
+  constructions of that kind (Falconer's examples) stop at dimension d/2. Above d/2 the distance
+  set is automatically fat, so a counterexample would need a new kind of construction: one whose
+  distance set is fat and still avoids the pattern.
+- Smaller steps look more realistic: special families of sets (products, self-similar or random
+  sets), the "all pins" version in Section 6 of the paper, and other infinite patterns.
+
+## 7. What "formalized in Lean" means
 
 [Lean](https://lean-lang.org) is a programming language in which mathematical proofs can be
 written so that a computer checks every single logical step. If Lean accepts a proof, it contains
 no gaps, provided the statement was written down correctly.
 
-- Our Lean files prove every numbered statement of the paper. Results that need the two OpenAI
-  theorems take them as **explicitly stated hypotheses**. In other words: "if Falconer's theorem
+- Our Lean files prove every lemma, proposition and theorem of the paper. Results that need the
+  two OpenAI theorems take them as **explicitly stated hypotheses**. In other words: "if Falconer's theorem
   and the dyadic Erdős result hold, then A and B hold". Lean checks this implication.
 - OpenAI also published Lean proofs of the two inputs. We downloaded the relevant ~2,500 files,
   compiled them on a laptop, and had Lean confirm that they prove *exactly* the statements we
   assume. Combined, Theorems A and B are then checked from the ground up.
-- Two inputs have no Lean proof and are used in one place each, clearly marked. One is OpenAI's
-  claim for ratios other than 1/2 (only in the "general ratio" version of Theorem B). The other is
-  the classical Mattila–Sjölin theorem of 1999 (only in the remark that pins down the open window).
+- The classical Mattila–Sjölin theorem of 1999 (used only in the remark that pins down the open
+  window) has a Lean proof too, in a separate project
+  ([math-mattila-sjolin](https://github.com/haraldschilly/math-mattila-sjolin)), and Lean confirms
+  that it proves exactly the statement we assume.
+- Only one input has no Lean proof: OpenAI's claim for ratios other than 1/2. It is used in one
+  place, clearly marked (the "general ratio" version of Theorem B).
+- Remark 4.7 (one bad center at most) and parts of the open questions cite harmonic-analysis
+  results that are not formalized. Nothing else depends on them.
 
-## 7. A short primer: how to read the Lean statements
+## 8. A short primer: how to read the Lean statements
 
 You don't need to read proofs to check what was proved. You only need to read the **statements**
 and the **definitions** they use. Lean checks the rest.
 
-### 7.1 The shape of a theorem
+### 8.1 The shape of a theorem
 
 Every Lean theorem looks like this:
 
@@ -120,7 +179,7 @@ Everything after `:= by` is the proof. Lean checks it, and you can skip it. Argu
 `{d : ℕ}` are things Lean infers on its own ("for any d"). Arguments in round brackets are inputs you
 must supply, such as a set or a proof of a hypothesis.
 
-### 7.2 Symbols
+### 8.2 Symbols
 
 | Lean | Meaning |
 |---|---|
@@ -138,7 +197,7 @@ must supply, such as a set or a proof of a hypothesis.
 | `ℝ≥0∞`, `ENNReal.ofReal` | numbers in [0, ∞]; measures can be infinite, so Lean compares them there |
 | `∀ᶠ s in 𝓝 0, P s` | "P(s) holds for every s close enough to 0" |
 
-### 7.3 The definitions everything rests on
+### 8.3 The definitions everything rests on
 
 These four definitions (in `DistanceSimilarity/Statements.lean`) are where the formal and informal
 mathematics meet, so they are worth reading carefully:
@@ -173,7 +232,7 @@ set of positive length. This text is **copied character for character** from Ope
 `lean/ComparatorChallenges/FalconerAllDimensions.lean`. The same holds for
 `DyadicAvoidanceStatement` and `DyadicAvoidance.lean`.
 
-### 7.4 Reading Theorem A
+### 8.4 Reading Theorem A
 
 ```lean
 theorem finite_pattern_distSet (hFal : FalconerStatement) {d : ℕ} (hd : 2 ≤ d)
@@ -193,7 +252,7 @@ Line by line:
 
 That is exactly Theorem A of the paper.
 
-### 7.5 Reading Theorem B
+### 8.5 Reading Theorem B
 
 ```lean
 theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) {d : ℕ} (hd : 1 ≤ d)
@@ -203,7 +262,8 @@ theorem pinned_dyadic_obstruction (hDy : DyadicAvoidanceStatement) {d : ℕ} (hd
       ENNReal.ofReal ((1 - η) ^ d) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) 1) ≤ volume K ∧
       0 < volume K ∧ dimH K = d ∧
       ¬ ContainsDyadicCopy (pinnedDistSet 0 K) ∧ ContainsDyadicCopy (distSet K) ∧
-      (2 ≤ d → ∀ p, p ≠ 0 → ContainsDyadicCopy (pinnedDistSet p K))
+      (2 ≤ d → ∀ p, p ≠ 0 → (∃ a b : ℝ, a < b ∧ Icc a b ⊆ pinnedDistSet p K) ∧
+        ContainsDyadicCopy (pinnedDistSet p K))
 ```
 
 "Assuming the dyadic Erdős result, for every dimension d ≥ 1 and every η between 0 and 1, there
@@ -216,21 +276,24 @@ is a set K such that:"
    copy of 1/2, 1/4, 1/8, … (the "onion" property);
 5. `ContainsDyadicCopy (distSet K)`: but **all** distances together do contain one;
 6. `2 ≤ d → ∀ p, p ≠ 0 → ...`: and in dimension ≥ 2, the distances from **any other point** p
-   contain one too.
+   contain a whole interval `[a, b]` with `a < b`, and therefore a copy too.
 
-### 7.6 Where each paper statement lives
+### 8.6 Where each paper statement lives
 
 | Paper | Lean name (namespace `DistanceSimilarity`) | File |
 |---|---|---|
-| Lemma 3.3 (distances at every scale) | `volume_distSet_inter_Icc_pos` | `FinitePatterns.lean` |
+| Theorems 2.1, 2.2 (the inputs, proved by OpenAI) | `falconer_holds`, `dyadicAvoidance_holds` | `verify/Verify/` |
+| Theorem 2.4 (Mattila–Sjölin, proved in math-mattila-sjolin) | `mattilaSjolin_holds` | `verify/Verify/` |
 | Lemma 3.1, Theorem A, Proposition 3.2 | `eventually_volume_pattern_pos`, `finite_pattern_distSet`, `exists_finite_pattern_distSet`, `volume_pattern_pairs_pos` | `FinitePatterns.lean` |
+| Lemma 3.3 (distances at every scale) | `volume_distSet_inter_Icc_pos` | `FinitePatterns.lean` |
+| Proposition 3.4 (fat at every scale is not enough) | `exists_dyadicFree_pos_every_scale` | `Scales.lean` |
 | Lemmas 4.1–4.5 | `not_containsGeomCopy_insert_zero`, `volume_norm_preimage_ge`, `dimH_eq_of_volume_pos`, `exists_Ico_subset_distSet`, `Icc_subset_pinnedDistSet` | `Patterns.lean`, `RadialVolume.lean`, `PinnedObstruction.lean` |
 | Theorem B / Theorem 4.6 (any ratio q) | `pinned_dyadic_obstruction` / `pinned_geometric_obstruction` | `PinnedObstruction.lean` |
 | Proposition C | `distSet_containsAffineCopy_of_interior`, `distSet_containsAffineCopy_of_volume_pos`, `counterexample_properties` | `Window.lean` |
-| Remark 5.1 (Mattila–Sjölin window) | `window_of_mattilaSjolin` | `Window.lean` |
+| Remark 5.1 (Mattila–Sjölin window) | `window_of_mattilaSjolin` (unconditional version in `verify/`) | `Window.lean` |
 | Lemma 6.1 (spheres) | `not_containsGeomCopy_pinnedDistSet_iff` | `Window.lean` |
 
-### 7.7 How do we know nothing is hidden?
+### 8.7 How do we know nothing is hidden?
 
 - **No unfinished proofs.** Lean has an escape hatch, `sorry`, that skips a proof. The build
   reports every use of it, and the axiom check below would show it as `sorryAx`. Our files contain
@@ -244,20 +307,21 @@ is a set K such that:"
   theorem falconer_holds : FalconerStatement := OAI.Falconer.falconer_distance_conjecture
   ```
   Lean accepts this line only if OpenAI's theorem has *exactly* the type `FalconerStatement`. The
-  same holds for the dyadic input. `verify/Verify/Unconditional.lean` then restates Theorems A and B
-  without hypotheses.
+  same holds for the dyadic input and for the Mattila–Sjölin theorem
+  (`verify/Verify/MattilaSjolin.lean`). `verify/Verify/Unconditional.lean` then restates
+  Theorems A and B (and Propositions 3.2, 3.4, C(iii), Lemma 3.3 and Remark 5.1) without
+  hypotheses.
 - **Independent replay.** Lean's `leanchecker --fresh` re-checks the entire chain from scratch in
-  the kernel (Mathlib, OpenAI's files and ours).
-- **What remains for a human:** check that the definitions in 7.3 and the statements in 7.4–7.5
+  the kernel (Mathlib, OpenAI's files, the Mattila–Sjölin proof and ours).
+- **What remains for a human:** check that the definitions in 8.3 and the statements in 8.4–8.5
   say what the paper says. That is the reason this primer exists.
 
-## 8. Caveats
+## 9. Caveats
 
 - The two inputs were produced by an AI model at OpenAI and have **not yet been reviewed** by
   human experts. Lean proofs are strong evidence, but a proof only shows the statement *as written
   in Lean*. Experts should still compare the Lean statement with the intended mathematics.
 - This paper and its Lean code were written with substantial help from Claude (Anthropic). Harald
   Schilly is responsible for the content.
-- The new results are modest: short arguments on top of deep inputs. The main contribution is the
-  question, the contrast between the center and every other point, and identifying exactly where
-  the problem is open.
+- The new results are modest: short arguments on top of deep inputs. Section 6 says what is new
+  and what is not.

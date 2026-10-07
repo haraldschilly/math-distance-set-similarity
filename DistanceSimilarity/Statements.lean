@@ -74,9 +74,10 @@ def GeometricAvoidanceStatement (q : ℝ) : Prop :=
 
 /-- The Mattila–Sjölin theorem (P. Mattila, P. Sjölin, *Regularity of distance measures and
 sets*, Math. Nachr. 204 (1999), 157–162), compact case: if `dimH E > (d+1)/2` then the distance
-set has nonempty interior. This classical, peer-reviewed theorem is **not formalized** (neither in
-Mathlib nor in the OpenAI library). It is used only in `window_of_mattilaSjolin`
-(Remark C' of the paper). -/
+set has nonempty interior. It is used only in `window_of_mattilaSjolin` (Remark 5.1 of the paper).
+It is proved, with this exact statement, in the separate formalization
+github.com/haraldschilly/math-mattila-sjolin (`MattilaSjolin.mattilaSjolin`);
+`verify/Verify/MattilaSjolin.lean` checks this with the kernel. -/
 def MattilaSjolinStatement : Prop :=
   ∀ (d : ℕ), 2 ≤ d → ∀ E : Set (EuclideanSpace ℝ (Fin d)), IsCompact E →
     ((d : ℝ≥0∞) + 1) / 2 < dimH E →

@@ -21,11 +21,12 @@ conjecture** (family 084).
 | Result | Content | Lean |
 |---|---|---|
 | Theorem A | `dim_H E > d/2` ⇒ `Δ(E)` contains `x + sF` for every finite `F`, for a positive-measure set of `x` at every small scale `s` (both signs) | `finite_pattern_distSet` |
-| Theorem B | A compact `K ⊂ ℝ^d` with volume ≥ (1−η)^d·vol(B) whose distance set from the origin avoids every affine copy of the dyadic sequence, while `Δ(K)` and every other `Δ_p(K)` (d ≥ 2) contain one. Theorem 4.6 does the same for any ratio `q` | `pinned_dyadic_obstruction`, `pinned_geometric_obstruction` |
-| Proposition C | A counterexample to the question has `Δ(E)` of positive measure with empty interior. With Mattila–Sjölin, the question is open only for `d/2 < dim_H E ≤ (d+1)/2` | `counterexample_properties`, `window_of_mattilaSjolin` |
+| Proposition 3.4 | Positive measure at every scale (which `Δ(E)` has) does not by itself force a dyadic copy | `exists_dyadicFree_pos_every_scale` |
+| Theorem B | A compact `K ⊂ ℝ^d` with `0 ∈ K` and volume ≥ (1−η)^d·vol(B) whose distance set from the origin avoids every affine copy of the dyadic sequence, while `Δ(K)` contains one and, for d ≥ 2, every other `Δ_p(K)` contains an interval. Theorem 4.6 does the same for any ratio `q` | `pinned_dyadic_obstruction`, `pinned_geometric_obstruction` |
+| Proposition C | A counterexample to the question has `Δ(E)` of positive measure with empty interior. With Mattila–Sjölin, the question is open only for `d/2 < dim_H E ≤ (d+1)/2`; a counterexample would be the first known set of dimension > d/2 whose distance set has empty interior | `counterexample_properties`, `window_of_mattilaSjolin` |
 
-**Every numbered statement in the paper has a Lean proof** (table in the paper, Section 7, and in
-[EXPLAINER.md](EXPLAINER.md#76-where-each-paper-statement-lives)). `#print axioms` shows only
+**Every lemma, proposition and theorem in the paper has a Lean proof** (table in the paper, Section 7, and in
+[EXPLAINER.md](EXPLAINER.md#86-where-each-paper-statement-lives)). `#print axioms` shows only
 `propext`, `Classical.choice`, `Quot.sound` for all of them. CI enforces this on every push: the build
 fails on any warning (including `sorry`), and `verify/check_axioms.py` fails on any other axiom.
 
@@ -37,16 +38,20 @@ never as axioms:
 | Hypothesis | Source | Lean proof? | Used in |
 |---|---|---|---|
 | `FalconerStatement` | OpenAI, family 073 | **yes**, by OpenAI; re-checked here (`verify/`) | Thm A, Lemma 3.3, Prop 3.2, Prop C(iii) |
-| `DyadicAvoidanceStatement` | OpenAI, family 084 | **yes**, by OpenAI; re-checked here (`verify/`) | Thm B |
+| `DyadicAvoidanceStatement` | OpenAI, family 084 | **yes**, by OpenAI; re-checked here (`verify/`) | Thm B, Prop 3.4 |
 | `GeometricAvoidanceStatement q` | OpenAI preprint (Oct 5, 2026) | no (q = 1/2 is the dyadic case) | only Thm 4.6 for q ≠ 1/2 |
-| `MattilaSjolinStatement` | Mattila–Sjölin 1999, peer-reviewed | no (not in Mathlib or OpenAI's library) | only Remark 5.1 |
+| `MattilaSjolinStatement` | Mattila–Sjölin 1999, peer-reviewed | **yes**, in [math-mattila-sjolin](https://github.com/haraldschilly/math-mattila-sjolin); re-checked here (`verify/`) | only Remark 5.1 |
 
-The OpenAI inputs come from an AI-generated, **unrefereed** collection, whose README says some
-results "could have issues". The first two statements are copied verbatim from OpenAI's formal
-statement files. `verify/` rebuilds OpenAI's Lean proofs (2459 files at commit `adc7f12`, Mathlib
-only), checks with the kernel that they prove *exactly* these statements, and derives unconditional
+The OpenAI inputs come from an AI-generated, **unrefereed** collection, whose README says "some of
+the unformalized results could have issues". The first two inputs are among the formalized ones;
+the third is not. The first two statements are copied verbatim from OpenAI's formal
+statement files. `MattilaSjolinStatement` is proved, with exactly this statement, in the separate
+repository [math-mattila-sjolin](https://github.com/haraldschilly/math-mattila-sjolin) (commit
+`435cd62`, also written with Claude), which reuses some of OpenAI's Lean files. `verify/` rebuilds
+OpenAI's Lean proofs (2459 files at commit `adc7f12`, Mathlib only) and the Mattila–Sjölin proof,
+checks with the kernel that they prove *exactly* these statements, and derives unconditional
 versions (`verify/Verify/Unconditional.lean`). The whole environment was also replayed with
-`leanchecker --fresh`.
+`leanchecker --fresh`. Only `GeometricAvoidanceStatement q` for q ≠ 1/2 has no Lean proof.
 
 ## Build
 
@@ -58,13 +63,14 @@ lake build                  # the conditional library, about a minute
 lake env lean verify/Axioms.lean
 ```
 
-## Re-checking OpenAI's proofs of the inputs (optional, heavy)
+## Re-checking the proofs of the inputs (optional, heavy)
 
 ```sh
 git clone https://github.com/openai/math ../openai-math        # then check out commit adc7f12
-python3 verify/fetch_oai.py ../openai-math                       # copies the 2459 needed files
-lake build Verify       # builds the OAI proofs (~1–2 h on 6 cores, ~10 GB RAM), prints axioms
-lake env leanchecker Verify.Unconditional   # replay the whole environment in the kernel
+git clone https://github.com/haraldschilly/math-mattila-sjolin ../math-mattila-sjolin  # commit 435cd62
+python3 verify/fetch_oai.py ../openai-math ../math-mattila-sjolin   # copies 2459 OAI + 17 MS files
+lake build Verify       # builds the proofs (~1–2 h on 6 cores, ~10 GB RAM), prints axioms
+lake env leanchecker --fresh Verify.Unconditional   # replay the whole environment (~20 min, ~9 GB)
 ```
 
 Lake builds in parallel on all cores. On a machine with little RAM, limit the build, e.g.

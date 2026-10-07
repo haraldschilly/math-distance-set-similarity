@@ -32,24 +32,30 @@ theorem ContainsAffineCopy.mono {F P Q : Set ℝ} (h : ContainsAffineCopy F P) (
   obtain ⟨x, s, hs, hx⟩ := h
   exact ⟨x, s, hs, fun a ha => hPQ (hx a ha)⟩
 
-/-- A nondegenerate closed interval contains an affine copy of every set `F ⊆ [0, M]`. -/
-theorem containsAffineCopy_Icc {a b M : ℝ} (hab : a < b) (hM : 0 < M) {F : Set ℝ}
-    (hF : F ⊆ Icc 0 M) : ContainsAffineCopy F (Icc a b) := by
-  refine ⟨a, (b - a) / M, (div_pos (sub_pos.2 hab) hM).ne', fun t ht => ⟨?_, ?_⟩⟩
-  · have := (hF ht).1
-    have : 0 ≤ (b - a) / M * t := mul_nonneg (div_pos (sub_pos.2 hab) hM).le this
-    linarith
-  · have ht1 := (hF ht).2
-    have : (b - a) / M * t ≤ (b - a) / M * M :=
-      mul_le_mul_of_nonneg_left ht1 (div_pos (sub_pos.2 hab) hM).le
-    rw [div_mul_cancel₀ _ hM.ne'] at this
-    linarith
+/-- A nondegenerate closed interval contains an affine copy of every bounded set `F`. -/
+theorem containsAffineCopy_Icc {a b : ℝ} (hab : a < b) {F : Set ℝ} (hF : Bornology.IsBounded F) :
+    ContainsAffineCopy F (Icc a b) := by
+  obtain ⟨r, hr⟩ := hF.subset_closedBall 0
+  set M := max r 1 with hMdef
+  have hM : 0 < M := lt_of_lt_of_le one_pos (le_max_right _ _)
+  have hs : 0 < (b - a) / (2 * M) := div_pos (sub_pos.2 hab) (by positivity)
+  refine ⟨(a + b) / 2, (b - a) / (2 * M), hs.ne', fun t ht => ?_⟩
+  have htM : |t| ≤ M := by
+    have := Metric.mem_closedBall.1 (hr ht)
+    rw [Real.dist_eq, sub_zero] at this
+    exact this.trans (le_max_left _ _)
+  have hbound : |(b - a) / (2 * M) * t| ≤ (b - a) / 2 := by
+    rw [abs_mul, abs_of_pos hs]
+    calc (b - a) / (2 * M) * |t| ≤ (b - a) / (2 * M) * M := mul_le_mul_of_nonneg_left htM hs.le
+      _ = (b - a) / 2 := by field_simp
+  constructor <;> linarith [abs_le.1 hbound]
 
 /-- A nondegenerate closed interval contains an affine copy of `{qⁿ : n ≥ 1}` for `0 < q < 1`. -/
 theorem containsGeomCopy_Icc (hq0 : 0 < q) (hq1 : q < 1) {a b : ℝ} (hab : a < b) :
     ContainsGeomCopy q (Icc a b) := by
-  obtain ⟨x, s, hs, h⟩ := containsAffineCopy_Icc (F := range fun n : ℕ => q ^ n) hab one_pos
-    (by rintro _ ⟨n, rfl⟩; exact ⟨by positivity, pow_le_one₀ hq0.le hq1.le⟩)
+  obtain ⟨x, s, hs, h⟩ := containsAffineCopy_Icc (F := range fun n : ℕ => q ^ n) hab
+    ((Metric.isBounded_Icc (0 : ℝ) 1).subset
+      (by rintro _ ⟨n, rfl⟩; exact ⟨by positivity, pow_le_one₀ hq0.le hq1.le⟩))
   exact ⟨x, s, hs, fun n _ => h _ ⟨n, rfl⟩⟩
 
 /-- A set with nonempty interior contains a nondegenerate closed interval. -/
@@ -62,11 +68,11 @@ theorem exists_Icc_subset_of_interior_nonempty {P : Set ℝ} (hP : (interior P).
   constructor <;> linarith [hy.1, hy.2]
 
 /-- **Proposition C(i).** A set of reals with nonempty interior contains an affine copy of every
-bounded set `F ⊆ [0, M]`. -/
+bounded set `F`. -/
 theorem containsAffineCopy_of_interior_nonempty {P : Set ℝ} (hP : (interior P).Nonempty)
-    {M : ℝ} (hM : 0 < M) {F : Set ℝ} (hF : F ⊆ Icc 0 M) : ContainsAffineCopy F P := by
+    {F : Set ℝ} (hF : Bornology.IsBounded F) : ContainsAffineCopy F P := by
   obtain ⟨a, b, hab, hsub⟩ := exists_Icc_subset_of_interior_nonempty hP
-  exact (containsAffineCopy_Icc hab hM hF).mono hsub
+  exact (containsAffineCopy_Icc hab hF).mono hsub
 
 /-- **Proposition C(i), geometric sequences.** A set of reals with nonempty interior contains an
 affine copy of `{qⁿ : n ≥ 1}` for every `0 < q < 1`. -/

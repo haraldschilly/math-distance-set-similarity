@@ -13,8 +13,9 @@ rev = "d13f23b723b8a846827a245b89c10fc7d3f11612"
 [[lean_lib]]
 name = "DistanceSimilarity"
 
-# --- Verification of the two imported OAI theorems (not a default target) ---
-# Populate verify/oai-src with `python3 verify/fetch_oai.py <openai-math-checkout>`.
+# --- Verification of the imported theorems (not a default target) ---
+# Populate verify/oai-src and verify/ms-src with
+# `python3 verify/fetch_oai.py <openai-math-checkout> <math-mattila-sjolin-checkout>`.
 [[lean_lib]]
 name = "OAI"
 srcDir = "verify/oai-src"
@@ -22,7 +23,12 @@ roots = ["OAI.MeasureTheory.DyadicAvoidance.Main",
          "OAI.MeasureTheory.Falconer.Campaign123PlanarFurstenbergProof"]
 globs = ["OAI.+"]
 
+# The Mattila–Sjölin formalization, github.com/haraldschilly/math-mattila-sjolin
+[[lean_lib]]
+name = "MattilaSjolin"
+srcDir = "verify/ms-src"
+
 [[lean_lib]]
 name = "Verify"
 srcDir = "verify"
-roots = ["Verify.Dyadic", "Verify.Falconer", "Verify.Unconditional"]
+roots = ["Verify.Dyadic", "Verify.Falconer", "Verify.MattilaSjolin", "Verify.Unconditional"]
