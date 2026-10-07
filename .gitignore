@@ -1,0 +1,11 @@
+.lake
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+verify/oai-src/
