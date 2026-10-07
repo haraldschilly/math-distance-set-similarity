@@ -93,10 +93,10 @@ the distance set is fat in every interval [0, r]. That alone does not force the 
 copies of the bad set A, placed at scales 1, 1/8, 1/64, ..., give a set that is fat at every scale
 and still avoids every copy of 1/2, 1/4, 1/8, ...
 
-**One bad center is the most one can expect.** For a set of positive volume in dimension ≥ 2, a
-classical theorem about averages over spheres (Stein, Bourgain) shows that almost every point sees
-all small distances. So the "onion" center of Theorem B is necessarily exceptional. This remark is
-not formalized.
+**Bad centers are rare.** For a set of positive volume in dimension ≥ 2, a classical theorem about
+averages over spheres (Stein, Bourgain) shows that almost every point sees all small distances. So
+the bad centers form a set of volume zero, and the "onion" center of Theorem B is such an
+exceptional point. This remark is not formalized.
 
 ## 6. What is new here, and what isn't
 
@@ -157,7 +157,7 @@ no gaps, provided the statement was written down correctly.
   that it proves exactly the statement we assume.
 - Only one input has no Lean proof: OpenAI's claim for ratios other than 1/2. It is used in one
   place, clearly marked (the "general ratio" version of Theorem B).
-- Remark 4.7 (one bad center at most) and parts of the open questions cite harmonic-analysis
+- Remark 4.7 (bad centers form a set of volume zero) and parts of the open questions cite harmonic-analysis
   results that are not formalized. Nothing else depends on them.
 
 ## 8. A short primer: how to read the Lean statements

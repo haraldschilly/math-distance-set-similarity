@@ -56,8 +56,8 @@ the dyadic sequence, while $\Delta(K)$ does contain one and, for $d\ge2$, so doe
 from every other point. (C) A counterexample must have $\Delta(E)$ of positive measure but empty
 interior, so by the Mattila--Sj\"olin theorem the question is open exactly for
 $d/2<\dimH E\le(d+1)/2$. A positive answer would follow if $\Delta(E)$ had nonempty interior in
-this range, itself an open problem; a negative answer would give the first known sets of dimension
-$>d/2$ whose distance sets have empty interior. Every lemma, proposition and theorem of this note
+this range, itself an open problem; a negative answer would, to our knowledge, give the first sets of
+dimension $>d/2$ whose distance sets have empty interior. Every lemma, proposition and theorem of this note
 has a Lean~4 proof with Mathlib. The OpenAI results and the Mattila--Sj\"olin theorem enter as
 explicit hypotheses, and we checked with the Lean kernel that OpenAI's Lean proofs and a separate
 formalization of the Mattila--Sj\"olin theorem prove exactly these hypotheses. So Theorems~A
@@ -79,11 +79,12 @@ Lebesgue measure contains a nontrivial affine copy $x+sP$ ($x\in\R$, $s\neq0$). 
 theorem~\cite{Steinhaus1920} implies that every finite set is measure universal. Erd\H{o}s
 conjectured~\cite{Erdos1974} that no infinite set is. The conjecture is known for slowly
 decaying sequences~\cite{Falconer1984} and for many structured sets~\cite{Bourgain1987,Kolountzakis1997}.
-The geometric sequences $\{q^n\}$, and above all the dyadic sequence
+The geometric sequences $\{q^n\}$ remained open, above all the dyadic sequence
 \[
-  \Dy=\{2^{-n}:n\ge1\},
+  \Dy=\{2^{-n}:n\ge1\};
 \]
-were long described as the main bottleneck~\cite{JungLaiMooroogen2024}. OpenAI has released a
+deciding whether $\Dy$ is measure universal has been called ``the major bottleneck of the
+problem''~\cite{JungLaiMooroogen2024}. OpenAI has released a
 collection of manuscripts, dated September and October 2026, produced by an internal AI model. It
 includes a proof that $\Dy$ is not measure universal~\cite{OAIDyadic} and an extension to every
 ratio $q\in(0,1)$~\cite{OAIGeometric}.
