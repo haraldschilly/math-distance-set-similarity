@@ -65,7 +65,7 @@ and~B, Proposition~C and the window are machine-checked down to the standard axi
 maximal theorem, which is not formalized, is used only in one clearly marked remark.
 \end{abstract}
 
-\subjclass[2020]{28A80 (primary); 28A75, 42B10, 03B35}
+\subjclass[2020]{28A80 (primary); 28A75, 42B10, 68V20}
 \keywords{Erd\H{o}s similarity problem, distance sets, Falconer conjecture, Hausdorff dimension,
 formal verification, Lean}
 
@@ -162,7 +162,11 @@ Let $d\ge2$, let $E\subset\R^d$ be compact, and let $q\in(0,1)$.
 \end{mainproposition}
 
 Combined with the Mattila--Sj\"olin theorem, a counterexample to Question~\ref{q:main} must have
-$d/2<\dimH E\le(d+1)/2$ (Remark~\ref{rem:MS}), so the question is open exactly in this window.
+$d/2<\dimH E\le(d+1)/2$ (Remark~\ref{rem:MS}), so the question is open exactly in this window:
+we know of no result that gives nonempty interior of $\Delta(E)$ below the threshold $(d+1)/2$,
+and Borges, Foster, Ou and Palsson note that ``neither of the results on nonempty interior has
+been improved since the original papers''~\cite{BFOP2026}, meaning those of Mattila--Sj\"olin and
+of Peres--Schlag~\cite{PeresSchlag2000}.
 Proposition~\ref{prop:C} also relates Question~\ref{q:main} to a known open problem: does
 $\dimH E>d/2$ already force $\Delta(E)$ to have nonempty interior (see~\cite{MattilaBook2015} for
 background)? Opinions differ. For the pinned version, Borges, Foster, Ou and Palsson write that
@@ -366,7 +370,8 @@ If $K\subset\R^d$ has $\Lm^d(K)>0$, then $\dimH K=d$. \leanref{dimH_eq_of_volume
 \end{lemma}
 
 \begin{proof}
-For the sup-norm on $\R^d$, $d$-dimensional Hausdorff measure equals $\Lm^d$, and the Euclidean
+For the sup-norm on $\R^d$, $d$-dimensional Hausdorff measure is a positive constant multiple of
+$\Lm^d$ (the constant depends on the normalisation of Hausdorff measure), and the Euclidean
 and sup norms are bi-Lipschitz equivalent. Hence $\mathcal H^d(K)>0$ and $\dimH K\ge d$. The
 reverse inequality is trivial.
 \end{proof}
@@ -455,7 +460,10 @@ Proposition~\ref{prop:C}(iii) its distance set has positive measure and empty in
   from nonempty interior of $\Delta(E)$, but needs less; by Proposition~\ref{prop:scalesfree} it
   needs multi-scale structure of distance sets beyond positive measure at every scale. A negative
   answer would need a construction controlling all distances of a set of dimension $>d/2$
-  simultaneously.
+  simultaneously. Such a set cannot contain a copy of itself scaled by $1/2$: if $f(E)\subseteq E$
+  for a similarity $f$ of $\R^d$ with ratio $1/2$, then $\tfrac12\Delta(E)\subseteq\Delta(E)$, so
+  $t\,\Dy\subseteq\Delta(E)$ for every $t\in\Delta(E)$, and $t>0$ exists as soon as $E$ has two
+  points. (This elementary observation is not formalized.)
 \item \emph{All pins.} Is there a compact $E\subset\R^d$, $d\ge2$, with $\dimH E>d/2$ such that
   $\Delta_p(E)$ contains no affine copy of $\Dy$ for \emph{every} $p\in E$? Since
   $\Delta_p(E)\subseteq\Delta(E)$ for $p\in E$, every counterexample to Question~\ref{q:main} is
